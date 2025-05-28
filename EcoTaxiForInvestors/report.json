@@ -1,0 +1,22 @@
+{
+  "cars": [
+    {
+      "id": 1,
+      "sid": 14,
+      "income": 25243,
+      "outcome": 4535,
+      "general": 20798,
+      "percent": 30,
+      "fee": 6239,
+      "profit": 14559
+    }
+  ],
+  "total": {
+    "income": 25243,
+    "outcome": 4535,
+    "general": 20798,
+    "cars": 1,
+    "fee": 6239,
+    "profit": 14559
+  }
+}

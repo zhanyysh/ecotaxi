@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoTaxi</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+  <div id="login" class="container">
+    <h1>Eco Taxi</h1>
+    <form onsubmit="checkPassword(event)" class="green-background">
+      <label class="white" for="password">Пароль:</label>
+      <input type="password" id="password" name="password">
+      <button class="white" type="submit">Войти</button>
+    </form>
+  </div>
+  <div id="menu" class="container">
+    <h1>Отчет по инветсору</h1>
+    <div class="date-range">
+      <label for="start-date">От:</label>
+      <input type="date" id="start-date">
+      <label for="end-date">До:</label>
+      <input type="date" id="end-date">
+      <button onclick="filterReport()">Фильтр</button>
+      <button onclick="openEvents()">Детальней</button>
+      <button onclick="logout()">Выйти</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Машина</th>
+          <th>Доход</th>
+          <th>KWH * 10</th>
+          <th>Расход</th>
+          <th>Общий</th>
+          <th>%</th>
+          <th>Комиссия</th>
+          <th>Прибыль</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+      </tbody>
+      <tfoot id="table-footer">
+        <tr>
+          <td>Итого</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div id="events" class="container">
+    <h1>События</h1>
+    <div class="date-range">
+      <label for="start-date">От:</label>
+      <input type="date" id="events-start-date">
+      <label for="end-date">До:</label>
+      <input type="date" id="events-end-date">
+      <button onclick="filterEvents()">Фильтр</button>
+      <button onclick="openMenu()">Отчет</button>
+      <button onclick="logout()">Выйти</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Дата</th>
+          <th>Тип</th>
+          <th>Машина</th>
+          <th>Водитель</th>
+          <th>Сумма</th>
+          <th>Описание</th>
+        </tr>
+      </thead>
+      <tbody id="events-table-body">
+      </tbody>
+      <tfoot id="events-table-footer">
+        <tr>
+          <td colspan="3">Итого</td>
+          <td colspan="4">0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <script src="static/script.js"></script>
+</body>
+
+</html>
