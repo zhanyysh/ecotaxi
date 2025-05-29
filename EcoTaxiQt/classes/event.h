@@ -15,6 +15,7 @@ private:
     int carId;
     int driverId;
     int typeId;
+    float dolg;
     float amount;
     QString description;
     QDateTime date;
@@ -26,6 +27,7 @@ public:
     int getCarId();
     int getDriverId();
     int getTypeId();
+    float getDolg();
     float getAmount();
     QString getDescription();
     QDateTime getDate();
@@ -33,6 +35,7 @@ public:
     void setCarId(int newCarId);
     void setDriverId(int newDriverId);
     void setTypeId(int newTypeId);
+    void setDolg(float newDolg);
     void setAmount(float newAmount);
     void setDescription(QString newDescription);
     void setDate(QDateTime newDate);

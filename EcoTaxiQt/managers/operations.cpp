@@ -82,6 +82,7 @@ QVariantList Operations::selectEventsByDate(QDate date)
             "CASE WHEN types.id IS NULL OR events.typeId = 0 THEN '-' ELSE CASE WHEN types.id IS NULL THEN 'удален' ELSE types.name END END as typeName, "
             "CASE WHEN drivers.id IS NULL OR events.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as driverId, "
             "CASE WHEN cars.id IS NULL OR events.carId = 0 THEN '-' ELSE CASE WHEN cars.id IS NULL THEN 'удалена' ELSE cars.sid END END as carId, "
+            "events.dolg, "
             "events.amount, "
             "events.description "
             "FROM events "
@@ -300,16 +301,32 @@ bool Operations::addEvent(Event event)
     dbManager &db = dbManager::getInstance();
     int driverId = event.getDriverId();
     int typeId = event.getTypeId();
+    float dolg = event.getDolg();
     float amount = event.getAmount();
     QDateTime date = event.getDate();
     QString description = event.getDescription();
-    return db.executeSet("INSERT INTO events (driverId, carId, typeId, amount, description, date, userId) VALUES (" + QString::number(driverId) + "," + QString::number(event.getCarId()) + "," + QString::number(typeId) + "," + QString::number(amount) + ",'" + description + "','" + date.toString("yyyy-MM-dd hh:mm:ss") + "'," + QString::number(us.getId()) + ")");
+    return db.executeSet("INSERT INTO events (driverId, carId, typeId, dolg, amount, description, date, userId) VALUES (" +
+        QString::number(driverId) + "," +
+        QString::number(event.getCarId()) + "," +
+        QString::number(typeId) + "," +
+        QString::number(dolg) + "," +
+        QString::number(amount) + ",'" +
+        description + "','" +
+        date.toString("yyyy-MM-dd hh:mm:ss") + "'," +
+        QString::number(us.getId()) + ")");
 }
 
 bool Operations::updateEvent(Event event)
 {
     dbManager &db = dbManager::getInstance();
-    return db.executeSet("UPDATE events SET driverId = " + QString::number(event.getDriverId()) + ", carId = " + QString::number(event.getCarId()) + ", typeId = " + QString::number(event.getTypeId()) + ", amount = " + QString::number(event.getAmount()) + ", description = '" + event.getDescription() + "', date = '" + event.getDate().toString("yyyy-MM-dd hh:mm:ss") + "' WHERE id = " + QString::number(event.getId()));
+    return db.executeSet("UPDATE events SET driverId = " + QString::number(event.getDriverId()) +
+        ", carId = " + QString::number(event.getCarId()) +
+        ", typeId = " + QString::number(event.getTypeId()) +
+        ", dolg = " + QString::number(event.getDolg()) +
+        ", amount = " + QString::number(event.getAmount()) +
+        ", description = '" + event.getDescription() +
+        "', date = '" + event.getDate().toString("yyyy-MM-dd hh:mm:ss") +
+        "' WHERE id = " + QString::number(event.getId()));
 }
 
 bool Operations::deleteEvent(int id)

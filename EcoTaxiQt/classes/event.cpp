@@ -10,9 +10,10 @@ Event::Event(QVariantList event)
     this->carId = event[1].toInt();
     this->driverId = event[2].toInt();
     this->typeId = event[3].toInt();
-    this->amount = event[4].toFloat();
-    this->description = event[5].toString();
-    this->date = event[6].toDateTime();
+    this->dolg = event[4].toFloat();
+    this->amount = event[5].toFloat();
+    this->description = event[6].toString();
+    this->date = event[7].toDateTime();
 }
 
 int Event::getId()
@@ -34,6 +35,8 @@ int Event::getTypeId()
 {
     return typeId;
 }
+
+float Event::getDolg() { return dolg; }
 
 float Event::getAmount()
 {
@@ -63,6 +66,8 @@ void Event::setTypeId(int newTypeId)
 {
     typeId = newTypeId;
 }
+
+void Event::setDolg(float newDolg) { dolg = newDolg; }
 
 void Event::setAmount(float newAmount)
 {

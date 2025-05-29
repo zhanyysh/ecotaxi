@@ -49,6 +49,8 @@ AddUpdateRepair::AddUpdateRepair(eSetting mode, int id, QWidget *parent)
         ui->AmountFrame->hide();
         ui->DriversBox->hide();
         ui->isPaidFrame->hide();
+        ui->TimeFrame->hide();
+        ui->FIDFrame->hide();
 
         if (id > 0)
         {

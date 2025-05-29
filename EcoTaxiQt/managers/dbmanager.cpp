@@ -217,6 +217,7 @@ void dbManager::createEventTable()
             carId INTEGER NOT NULL,
             driverId INTEGER NOT NULL,
             typeId INTEGER NOT NULL,
+            dolg FLOAT NOT NUll,
             amount FLOAT NOT NULL,
             description TEXT,
             date DATETIME DEFAULT CURRENT_TIMESTAMP,

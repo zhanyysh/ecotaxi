@@ -16,24 +16,24 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     ui->timeEdit->setDisabled(true);
 
     // hide settings and reports button if user is not admin
-    if (!u.checkIsAdmin())
-    {
-        // ui->SettingsButton->setDisabled(true);
-        ui->SettingsButton->removeItem(6);
-        ui->SettingsButton->removeItem(5);
-        ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->removeItem(7);
-        ui->ReportsButton->removeItem(5);
-        ui->ReportsButton->removeItem(4);
-        ui->ReportsButton->removeItem(3);
-        ui->ReportsButton->removeItem(1);
-        ui->ReportsButton->removeItem(0);
-    }
-    else if (u.getId() != -1)
-    {
-        ui->SettingsButton->removeItem(6);
-        ui->SettingsButton->removeItem(5);
-    }
+    // if (!u.checkIsAdmin())
+    // {
+    //     // ui->SettingsButton->setDisabled(true);
+    //     ui->SettingsButton->removeItem(6);
+    //     ui->SettingsButton->removeItem(5);
+    //     ui->SettingsButton->removeItem(2);
+    //     ui->ReportsButton->removeItem(7);
+    //     ui->ReportsButton->removeItem(5);
+    //     ui->ReportsButton->removeItem(4);
+    //     ui->ReportsButton->removeItem(3);
+    //     ui->ReportsButton->removeItem(1);
+    //     ui->ReportsButton->removeItem(0);
+    // }
+    // else if (u.getId() != -1)
+    // {
+    //     ui->SettingsButton->removeItem(6);
+    //     ui->SettingsButton->removeItem(5);
+    // }
 
     // date & time
     date = QDate::currentDate();
@@ -41,6 +41,7 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
 
     ui->KWTEdit->setValidator(new QIntValidator());
     ui->SumEdit->setValidator(new QDoubleValidator());
+    ui->DolgEdit->setValidator(new QDoubleValidator());
     ui->TimeEdit->setValidator(new QIntValidator());
 
     ui->dateButton->setText(date.toString("dd.MM.yyyy"));
@@ -61,6 +62,7 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     ui->driversLabel->setProperty("color", "white");
     ui->sumLabel->setProperty("color", "white");
     ui->descLabel->setProperty("color", "white");
+    ui->dolgLabel->setProperty("color", "white");
 
     // charge components
     ui->carsLabel_2->setProperty("color", "white");
@@ -89,6 +91,13 @@ bool MainWindow::checkEventFill()
         ui->sumLabel->setStyleSheet("color: red;");
         result = false;
     }
+
+    if (ui->DolgEdit->text().isEmpty()) {
+        ui->DolgEdit->setStyleSheet("background-color: red;");
+        ui->dolgLabel->setStyleSheet("color: red;");
+        result = false;
+    }
+
     return result;
 }
 
@@ -178,15 +187,10 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 }
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
-    userSession &u = userSession::getInstance();
     setReportIndex();
     if (index > 7)
         index += 7;
-    if (!u.checkIsAdmin()) {
-        nav->userOpenReport(index);
-    } else {
-        nav->openReport(index);
-    }
+    nav->openReport(index);
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
@@ -269,7 +273,16 @@ void MainWindow::on_addEventButton_clicked()
                 datetime = this->date.toString("yyyy-MM-dd") + " " + QTime::currentTime().toString("hh:mm:ss");
             else
                 datetime = this->date.toString("yyyy-MM-dd") + " " + ui->timeEdit->time().toString("hh:mm:ss");
-            Operations::addEvent(Event(QVariantList::fromList({0, this->cars.value(ui->CarsBox->currentText()), this->drivers.value(ui->DriversBox->currentText()), this->types.value(ui->TypesBox->currentText()), ui->SumEdit->text(), ui->descEdit->toPlainText(), datetime})));
+            Operations::addEvent(Event(QVariantList::fromList({
+                0,
+                this->cars.value(ui->CarsBox->currentText()),
+                this->drivers.value(ui->DriversBox->currentText()),
+                this->types.value(ui->TypesBox->currentText()),
+                ui->DolgEdit->text(),
+                ui->SumEdit->text(),
+                ui->descEdit->toPlainText(),
+                datetime
+            })));
             clearAllInputsEvent();
             ui->TypesBox->setStyleSheet("background-color: #32CD32;");
             ui->typeLabel->setStyleSheet("color: #32CD32;");
@@ -279,6 +292,8 @@ void MainWindow::on_addEventButton_clicked()
             ui->carsLabel->setStyleSheet("color: #32CD32;");
             ui->SumEdit->setStyleSheet("background-color: #32CD32;");
             ui->sumLabel->setStyleSheet("color: #32CD32;");
+            ui->DolgEdit->setStyleSheet("background-color: #32CD32;");
+            ui->dolgLabel->setStyleSheet("color: #32CD32;");
             ui->descEdit->setStyleSheet("background-color: #32CD32;");
             ui->descLabel->setStyleSheet("color: #32CD32;");
         }
@@ -343,6 +358,8 @@ void MainWindow::resetInputColor()
     ui->timeLabel->setStyleSheet("color: white;");
     ui->descEdit->setStyleSheet("");
     ui->descLabel->setStyleSheet("color: white;");
+    ui->DolgEdit->setStyleSheet("");
+    ui->dolgLabel->setStyleSheet("color: white;");
 }
 
 void MainWindow::on_dateButton_clicked()
@@ -364,6 +381,7 @@ void MainWindow::clearAllInputsEvent()
 {
     ui->SumEdit->clear();
     ui->descEdit->clear();
+    ui->DolgEdit->clear();
 }
 
 void MainWindow::clearAllInputsCharge()

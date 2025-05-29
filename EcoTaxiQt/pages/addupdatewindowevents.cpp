@@ -16,6 +16,7 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
     ui->AmountEdit->setValidator(new QDoubleValidator());
     ui->KWTEdit->setValidator(new QIntValidator());
     ui->DurationEdit->setValidator(new QIntValidator());
+    ui->DolgEdit->setValidator(new QDoubleValidator());
 
     this->setWindowModality(Qt::ApplicationModal);
 
@@ -55,6 +56,7 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
         ui->DriverIdLabel->setProperty("color", "white");
         ui->AmountLabel->setProperty("color", "white");
         ui->DescLabel->setProperty("color", "white");
+        ui->DolgLabel->setProperty("color", "white");
 
         types_list = Operations::selectAllTypes();
         foreach (Type type, types_list) {
@@ -73,6 +75,7 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
             ui->DriverIdBox->setCurrentText(Operations::getDriver(event.getDriverId()).getName());
             ui->AmountEdit->setText(QString::number(event.getAmount()));
             ui->DescEdit->setText(event.getDescription());
+            ui->DolgEdit->setText(QString::number(event.getDolg()));
         }
         break;
     case Events::Charges:
@@ -123,10 +126,38 @@ void addupdatewindowEvents::addRecord() {
         if (id > 0) {
             switch (this->mode) {
             case Events::Events:
-                Operations::updateEvent(Event(QVariantList::fromList({id, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriverIdBox->currentText()), types.value(ui->TypeBox->currentText()), ui->AmountEdit->text().toLongLong(), ui->DescEdit->toPlainText(), ui->DateTimeEdit->dateTime()})));
+                Operations::updateEvent(Event(QVariantList::fromList({
+                    id,
+                    carsId.value(ui->CarIdBox->currentText()),
+                    driversId.value(ui->DriverIdBox->currentText()),
+                    types.value(ui->TypeBox->currentText()),
+                    ui->DolgEdit->text().toFloat(),
+                    ui->AmountEdit->text().toFloat(),
+                    ui->DescEdit->toPlainText(),
+                    ui->DateTimeEdit->dateTime()
+                })));
                 break;
             case Events::Charges:
                 Operations::updateCharge(Charge(QVariantList::fromList({id, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriverIdBox->currentText()), locations.value(ui->LocationBox->currentText()), ui->KWTEdit->text().toLongLong(), ui->DurationEdit->text().toLongLong(), ui->DateTimeEdit->dateTime()})));
+            }
+        }
+        else {
+            switch (this->mode) {
+            case Events::Events:
+                Operations::addEvent(Event(QVariantList::fromList({
+                    0,
+                    carsId.value(ui->CarIdBox->currentText()),
+                    driversId.value(ui->DriverIdBox->currentText()),
+                    types.value(ui->TypeBox->currentText()),
+                    ui->DolgEdit->text().toFloat(),
+                    ui->AmountEdit->text().toFloat(),
+                    ui->DescEdit->toPlainText(),
+                    ui->DateTimeEdit->dateTime()
+                })));
+                break;
+            case Events::Charges:
+                // Implementation for adding a charge
+                break;
             }
         }
         emit close();
@@ -137,7 +168,6 @@ void addupdatewindowEvents::addRecord() {
     }
 }
 
-
 bool addupdatewindowEvents::checkFill() {
     bool result = true;
     switch (this->mode) {
@@ -145,6 +175,11 @@ bool addupdatewindowEvents::checkFill() {
         if (ui->AmountEdit->text().isEmpty()) {
             ui->AmountEdit->setStyleSheet("background-color: red;");
             ui->AmountLabel->setStyleSheet("color: red;");
+            result = false;
+        }
+        if (ui->DolgEdit->text().isEmpty()) {
+            ui->DolgEdit->setStyleSheet("background-color: red;");
+            ui->DolgLabel->setStyleSheet("color: red;");
             result = false;
         }
         break;
@@ -164,7 +199,6 @@ bool addupdatewindowEvents::checkFill() {
     return result;
 }
 
-
 void addupdatewindowEvents::resetInputColor() {
     ui->AmountEdit->setStyleSheet("");
     ui->AmountLabel->setStyleSheet("color: white;");
@@ -182,6 +216,8 @@ void addupdatewindowEvents::resetInputColor() {
     ui->TypeLabel->setStyleSheet("color: white;");
     ui->DescEdit->setStyleSheet("");
     ui->DescLabel->setStyleSheet("color: white;");
+    ui->DolgEdit->setStyleSheet("");
+    ui->DolgLabel->setStyleSheet("color: white;");
 }
 
 

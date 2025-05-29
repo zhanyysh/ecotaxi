@@ -74,7 +74,7 @@ bool eventPage::setTable()
     switch (this->table)
     {
     case Events::Events:
-        model->setHorizontalHeaderLabels({"id", "Время", "Тип", "ID Водителя", "ID Машины", "Сумма", "Описание"});
+        model->setHorizontalHeaderLabels({"id", "Время", "Тип", "ID Водителя", "ID Машины", "Долг", "Сумма", "Описание"});
         for (const QVariant &event : Operations::selectEventsByDate(this->date))
         {
             QList<QStandardItem *> row;
@@ -91,11 +91,13 @@ bool eventPage::setTable()
             row.append(new QStandardItem(data[3].toString()));
             row.append(new QStandardItem(data[4].toString()));
 
+            row.append(new QStandardItem(data[5].toString()));
+
             QStandardItem *amountItem = new QStandardItem();
-            amountItem->setData(data[5].toInt(), Qt::DisplayRole); // Сумма
+            amountItem->setData(data[6].toFloat(), Qt::DisplayRole); // Сумма
             row.append(amountItem);
             
-            row.append(new QStandardItem(data[6].toString()));
+            row.append(new QStandardItem(data[7].toString()));
             model->appendRow(row);
         }
         break;
