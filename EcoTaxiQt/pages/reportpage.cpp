@@ -312,7 +312,7 @@ void ReportPage::setTable()
         break;
     
     case Report::FinesByCars:
-        model->setHorizontalHeaderLabels({"Дата", "Водитель", "Сумма", "Оплачен", "Описание"});
+        model->setHorizontalHeaderLabels({"Дата", "Время", "FID", "Водитель", "Сумма", "Оплачен", "Описание"});
         for (const QVariant &fineData : ReportOperations::getFinesByCarReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList fine = fineData.toList();
@@ -322,21 +322,26 @@ void ReportPage::setTable()
             dateItem->setData(fine[1].toDate(), Qt::DisplayRole);
             row.append(dateItem); // Дата
 
+            QStandardItem *timeItem = new QStandardItem();
+            timeItem->setData(fine[3].toTime(), Qt::DisplayRole);
+            row.append(timeItem); // Время
+
+            row.append(new QStandardItem(fine[4].toString())); // FID
             row.append(new QStandardItem(fine[2].toString())); // Водитель
 
             QStandardItem *amountItem = new QStandardItem();
-            amountItem->setData(fine[3].toInt(), Qt::DisplayRole);
+            amountItem->setData(fine[5].toInt(), Qt::DisplayRole);
             row.append(amountItem); // Сумма
 
-            row.append(new QStandardItem(fine[4].toBool() ? "Да" : "Нет")); // Оплачен
-            row.append(new QStandardItem(fine[5].toString())); // Описание
+            row.append(new QStandardItem(fine[6].toBool() ? "Да" : "Нет")); // Оплачен
+            row.append(new QStandardItem(fine[7].toString())); // Описание
 
             model->appendRow(row);
         }
         break;
 
     case Report::FinesByDrivers:
-        model->setHorizontalHeaderLabels({"Дата", "Машина", "Сумма", "Оплачен", "Описание"});
+        model->setHorizontalHeaderLabels({"Дата", "Время", "FID", "Машина", "Сумма", "Оплачен", "Описание"});
         for (const QVariant &fineData : ReportOperations::getFinesByDriverReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList fine = fineData.toList();
@@ -346,14 +351,19 @@ void ReportPage::setTable()
             dateItem->setData(fine[1].toDate(), Qt::DisplayRole);
             row.append(dateItem); // Дата
 
+            QStandardItem *timeItem = new QStandardItem();
+            timeItem->setData(fine[3].toTime(), Qt::DisplayRole);
+            row.append(timeItem); // Время
+
+            row.append(new QStandardItem(fine[4].toString())); // FID
             row.append(new QStandardItem(fine[2].toString())); // Машина
 
             QStandardItem *amountItem = new QStandardItem();
-            amountItem->setData(fine[3].toInt(), Qt::DisplayRole);
+            amountItem->setData(fine[5].toInt(), Qt::DisplayRole);
             row.append(amountItem); // Сумма
 
-            row.append(new QStandardItem(fine[4].toBool() ? "Да" : "Нет")); // Оплачен
-            row.append(new QStandardItem(fine[5].toString())); // Описание
+            row.append(new QStandardItem(fine[6].toBool() ? "Да" : "Нет")); // Оплачен
+            row.append(new QStandardItem(fine[7].toString())); // Описание
 
             model->appendRow(row);
         }

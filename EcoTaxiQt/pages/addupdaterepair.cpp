@@ -71,6 +71,8 @@ AddUpdateRepair::AddUpdateRepair(eSetting mode, int id, QWidget *parent)
         ui->AmountLabel->setProperty("color", "white");
         ui->DriversLabel->setProperty("color", "white");
         ui->isPaidCheckBox->setProperty("color", "white");
+        ui->TimeLabel->setProperty("color", "white");
+        ui->FIDLabel->setProperty("color", "white");
 
         ui->DriversBox->addItem("-");
         driversId_list = Operations::selectAllDrivers();
@@ -87,16 +89,20 @@ AddUpdateRepair::AddUpdateRepair(eSetting mode, int id, QWidget *parent)
 
             this->from = fine[1].toDate();
             ui->fromButton->setText(this->from.toString("dd.MM.yyyy"));
+            ui->TimeEdit->setTime(fine[4].toTime());
+            ui->FIDEdit->setText(fine[5].toString());
             ui->CarIdBox->setCurrentText(carsSid.value(fine[2].toInt()));
             ui->DriversBox->setCurrentText(driversName.value(fine[3].toInt()));
-            ui->AmountEdit->setText(fine[4].toString());
-            ui->isPaidCheckBox->setChecked(fine[5].toBool());
-            ui->DescEdit->setText(fine[6].toString());
+            ui->AmountEdit->setText(fine[6].toString());
+            ui->isPaidCheckBox->setChecked(fine[7].toBool());
+            ui->DescEdit->setText(fine[8].toString());
         }
         else
         {
             this->from = QDate::currentDate();
             ui->fromButton->setText(this->from.toString("dd.MM.yyyy"));
+            ui->TimeEdit->setTime(QTime::currentTime());
+            ui->FIDEdit->clear();
         }
 
         ui->ToDateFrame->hide();
@@ -129,7 +135,10 @@ void AddUpdateRepair::addRecord()
                 Operations::updateRepair(id, carsId.value(ui->CarIdBox->currentText()), this->from, this->to, ui->DescEdit->toPlainText());
                 break;
             case eSetting::Fines:
-                Operations::updateFine(id, this->from, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriversBox->currentText()), ui->AmountEdit->text().toLongLong(), ui->isPaidCheckBox->isChecked(), ui->DescEdit->toPlainText());
+                Operations::updateFine(id, this->from, ui->TimeEdit->time(), carsId.value(ui->CarIdBox->currentText()), 
+                    driversId.value(ui->DriversBox->currentText()), ui->FIDEdit->text(), 
+                    ui->AmountEdit->text().toLongLong(), ui->isPaidCheckBox->isChecked(), 
+                    ui->DescEdit->toPlainText());
                 break;
             default:
                 break;
@@ -142,7 +151,10 @@ void AddUpdateRepair::addRecord()
                 Operations::addRepair(carsId.value(ui->CarIdBox->currentText()), this->from, this->to, ui->DescEdit->toPlainText());
                 break;
             case eSetting::Fines:
-                Operations::addFine(this->from, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriversBox->currentText()), ui->AmountEdit->text().toLongLong(), ui->isPaidCheckBox->isChecked(), ui->DescEdit->toPlainText());
+                Operations::addFine(this->from, ui->TimeEdit->time(), carsId.value(ui->CarIdBox->currentText()), 
+                    driversId.value(ui->DriversBox->currentText()), ui->FIDEdit->text(), 
+                    ui->AmountEdit->text().toLongLong(), ui->isPaidCheckBox->isChecked(), 
+                    ui->DescEdit->toPlainText());
                 break;
             default:
                 break;
@@ -180,7 +192,15 @@ bool AddUpdateRepair::checkFill()
         {
             ui->AmountLabel->setProperty("color", "red");
             ui->AmountEdit->setStyleSheet("background-color: red;");
+            result = false;
         }
+        if (ui->FIDEdit->text().isEmpty())
+        {
+            ui->FIDLabel->setProperty("color", "red");
+            ui->FIDEdit->setStyleSheet("background-color: red;");
+            result = false;
+        }
+        break;
     default:
         break;
     }
@@ -193,12 +213,15 @@ void AddUpdateRepair::resetInputColor()
     ui->DescLabel->setProperty("color", "white");
     ui->AmountLabel->setProperty("color", "white");
     ui->DriversLabel->setProperty("color", "white");
+    ui->TimeLabel->setProperty("color", "white");
+    ui->FIDLabel->setProperty("color", "white");
 
     ui->CarIdBox->setStyleSheet("background-color: white;");
     ui->DescEdit->setStyleSheet("background-color: white;");
     ui->AmountEdit->setStyleSheet("background-color: white;");
     ui->DriversBox->setStyleSheet("background-color: white;");
-
+    ui->TimeEdit->setStyleSheet("background-color: white;");
+    ui->FIDEdit->setStyleSheet("background-color: white;");
 }
 
 void AddUpdateRepair::on_fromButton_clicked()

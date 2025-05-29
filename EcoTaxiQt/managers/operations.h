@@ -5,6 +5,7 @@
 #include <QList>
 #include "QString"
 #include "QDate"
+#include "QTime"
 
 #include "dbmanager.h"
 #include "backupmanager.h"
@@ -93,8 +94,8 @@ public:
     bool static deleteRepair(int id);
     QVariantList static getRepair(int id);
 
-    bool static addFine(QDate date, int carId, int driverId, int amount, bool isPaid, QString description);
-    bool static updateFine(int id, QDate date, int carId, int driverId, int amount, bool isPaid, QString description);
+    bool static addFine(QDate date, QTime time, int carId, int driverId, QString fid, int amount, bool isPaid, QString description);
+    bool static updateFine(int id, QDate date, QTime time, int carId, int driverId, QString fid, int amount, bool isPaid, QString description);
     bool static deleteFine(int id);
     QVariantList static getFine(int id);
 };

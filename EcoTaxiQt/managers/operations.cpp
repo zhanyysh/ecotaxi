@@ -552,23 +552,27 @@ QVariantList Operations::getRepair(int id) {
         return data[0].toList();
 }
 
-bool Operations::addFine(QDate date, int carId, int driverId, int amount, bool isPaid, QString description) {
+bool Operations::addFine(QDate date, QTime time, int carId, int driverId, QString fid, int amount, bool isPaid, QString description) {
     dbManager &db = dbManager::getInstance();
-    return db.executeSet("INSERT INTO fines (date, carId, driverId, amount, isPaid, description) VALUES ('" +
-                         date.toString("yyyy-MM-dd") + "'," +
+    return db.executeSet("INSERT INTO fines (date, time, carId, driverId, FID, amount, isPaid, description) VALUES ('" +
+                         date.toString("yyyy-MM-dd") + "','" +
+                         time.toString("HH:mm:ss") + "'," +
                          QString::number(carId) + "," +
-                         QString::number(driverId) + "," +
+                         QString::number(driverId) + ",'" +
+                         fid + "'," +
                          QString::number(amount) + "," +
                          QString::number(isPaid) + ",'" +
                          description + "')");
 }
 
-bool Operations::updateFine(int id, QDate date, int carId, int driverId, int amount, bool isPaid, QString description) {
+bool Operations::updateFine(int id, QDate date, QTime time, int carId, int driverId, QString fid, int amount, bool isPaid, QString description) {
     dbManager &db = dbManager::getInstance();
     return db.executeSet("UPDATE fines SET date = '" + date.toString("yyyy-MM-dd") +
+                         "', time = '" + time.toString("HH:mm:ss") +
                          "', carId = " + QString::number(carId) +
                          ", driverId = " + QString::number(driverId) +
-                         ", amount = " + QString::number(amount) +
+                         ", FID = '" + fid +
+                         "', amount = " + QString::number(amount) +
                          ", isPaid = " + QString::number(isPaid) +
                          ", description = '" + description +
                          "' WHERE id = " + QString::number(id));

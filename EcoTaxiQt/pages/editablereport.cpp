@@ -208,50 +208,40 @@ void EditableReport::setTable()
         QString driverFilter = ui->driverFilterComboBox->currentText();
         QString descriptionFilter = ui->descriptionFilterLineEdit->text();
         QString searchText = ui->searchLineEdit->text();
-        model->setHorizontalHeaderLabels({ "ID", "Дата", "Машина", "Водитель", "Сумма", "Оплачен", "Описание" });
+        model->setHorizontalHeaderLabels({ "ID", "Дата", "Время", "FID", "Машина", "Водитель", "Сумма", "Оплачен", "Описание" });
 
         QVariantList report = ui->checkBox->isChecked()
             ? ReportOperations::getNotPaidFinesReport()
             : ReportOperations::getFinesReport();
 
-        for (const QVariant &fine : report) {
+        for (const QVariant &fine : report)
+        {
             QVariantList rp = fine.toList();
-            QDate fineDate = rp[1].toDate();
-            QString carLicensePlate = rp[2].toString();
-            QString driverName = rp[3].toString();
-            QString fineDescription = rp[6].toString();
+            QString car = rp[2].toString();
+            QString driver = rp[3].toString();
+            QString time = rp[4].toTime().toString("HH:mm:ss");
+            QString fid = rp[5].toString();
+            QString amount = rp[6].toString();
+            QString isPaid = rp[7].toBool() ? "Да" : "Нет";
+            QString desc = rp[8].toString();
 
-            if (fineDate < startDate || fineDate > endDate)
-                continue;
-            if (!carFilter.isEmpty() && carLicensePlate != carFilter)
-                continue;
-            if (!driverFilter.isEmpty() && driverName != driverFilter)
-                continue;
-            if (!descriptionFilter.isEmpty() && !fineDescription.contains(descriptionFilter, Qt::CaseInsensitive))
-                continue;
-
-            // Apply search bar logic: match any column
-            if (!searchText.isEmpty() &&
-                !rp[0].toString().contains(searchText, Qt::CaseInsensitive) && // ID
-                !fineDate.toString("yyyy-MM-dd").contains(searchText, Qt::CaseInsensitive) && // Дата
-                !carLicensePlate.contains(searchText, Qt::CaseInsensitive) && // Машина
-                !driverName.contains(searchText, Qt::CaseInsensitive) &&      // Водитель
-                !rp[4].toString().contains(searchText, Qt::CaseInsensitive) && // Сумма
-                !rp[5].toString().contains(searchText, Qt::CaseInsensitive) && // Оплачен
-                !fineDescription.contains(searchText, Qt::CaseInsensitive))    // Описание
-                continue;
-
-            QList<QStandardItem *> row;
-            row << new QStandardItem(rp[0].toString());
-            row << new QStandardItem();
-            row[1]->setData(rp[1].toDate(), Qt::DisplayRole);
-            row << new QStandardItem(carLicensePlate);
-            row << new QStandardItem(driverName);
-            row << new QStandardItem();
-            row[4]->setData(rp[4].toInt(), Qt::DisplayRole);
-            row << new QStandardItem(rp[5].toBool() ? "Да" : "Нет");
-            row << new QStandardItem(fineDescription);
-            model->appendRow(row);
+            if ((carFilter.isEmpty() || car == carFilter) &&
+                (driverFilter.isEmpty() || driver == driverFilter) &&
+                (descriptionFilter.isEmpty() || desc.contains(descriptionFilter, Qt::CaseInsensitive)) &&
+                (searchText.isEmpty() || car.contains(searchText, Qt::CaseInsensitive) || driver.contains(searchText, Qt::CaseInsensitive) || amount.contains(searchText, Qt::CaseInsensitive) || desc.contains(searchText, Qt::CaseInsensitive)))
+            {
+                QList<QStandardItem *> row;
+                row << new QStandardItem(rp[0].toString());
+                row << new QStandardItem(rp[1].toDate().toString("dd.MM.yyyy"));
+                row << new QStandardItem(time);
+                row << new QStandardItem(fid);
+                row << new QStandardItem(car);
+                row << new QStandardItem(driver);
+                row << new QStandardItem(amount);
+                row << new QStandardItem(isPaid);
+                row << new QStandardItem(desc);
+                model->appendRow(row);
+            }
         }
         break;
     }

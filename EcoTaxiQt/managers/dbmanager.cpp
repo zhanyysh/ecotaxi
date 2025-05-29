@@ -339,6 +339,8 @@ void dbManager::createFinesTable()
             date DATE NOT NULL,
             carId INTEGER NOT NULL,
             driverId INTEGER,
+            time TIME NOT NULL,
+            FID TEXT NOT NULL,
             amount FLOAT NOT NULL,
             isPaid BOOLEAN NOT NULL DEFAULT false,
             description TEXT
