@@ -220,6 +220,10 @@ void addupdatewindowEvents::resetInputColor() {
     ui->DolgLabel->setStyleSheet("color: white;");
 }
 
+void addupdatewindowEvents::on_paidButton_clicked() {
+    ui->DolgEdit->setText("0");
+}
+
 
 
 

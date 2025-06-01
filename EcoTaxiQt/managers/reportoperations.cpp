@@ -583,18 +583,18 @@ QVariantList ReportOperations::getUsers2Report(QDate fromDate, QDate toDate)
         dynamicColumns += QString("SUM(CASE WHEN users.name = '%1' THEN 1 ELSE 0 END) AS `%1`, ")
                               .arg(userName.replace("'", "''"));
     }
-    dynamicColumns.chop(2);
+    dynamicColumns.chop(2); // Убираем последнюю запятую и пробел
 
     QString mainQuery = QString(
                             "SELECT DATE(events.date) AS eventDate, "
                             "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
-                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS removed, "
+                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS removed "
                             "%1 "
                             "FROM events "
                             "LEFT JOIN users ON users.id = events.userId "
                             "WHERE events.date BETWEEN '" +
                             fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'"
-                                                                                                          "GROUP BY eventDate ORDER BY eventDate")
+                            "GROUP BY eventDate ORDER BY eventDate")
                             .arg(dynamicColumns);
 
     QVariantList data = db.executeGet(mainQuery);
@@ -628,11 +628,12 @@ QVariantList ReportOperations::getAllUsers2Report(QDate fromDate, QDate toDate)
         dynamicColumns += QString("SUM(CASE WHEN users.name = '%1' THEN 1 ELSE 0 END) AS `%1`, ")
                               .arg(userName.replace("'", "''"));
     }
-    dynamicColumns.chop(2);
+    dynamicColumns.chop(2); // Убираем последнюю запятую и пробел
+
     QString mainQuery = QString(
                             "SELECT "
                             "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
-                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS удален, "
+                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS удален "
                             "%1 "
                             "FROM events "
                             "LEFT JOIN users ON users.id = events.userId "
@@ -664,7 +665,7 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "   cars.sid,\n"
         "   investors.name AS investorName,\n"
         "   COUNT(events.id) AS rentCount,\n"
-        "   SUM(COALESCE(CAST(REGEXP_SUBSTR(events.description, '[0-9]+' , 1, 1) AS UNSIGNED), 0)) AS debtAmount\n"
+        "   SUM(COALESCE(CAST(REGEXP_SUBSTR(events.description, '[0-9]+') AS UNSIGNED), 0)) AS debtAmount\n"
         "FROM cars\n"
         "LEFT JOIN events ON events.carId = cars.id\n"
         "LEFT JOIN types ON events.typeId = types.id\n"
@@ -673,8 +674,8 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "AND events.amount = 0\n"
         "AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-                                                                                      "GROUP BY cars.id, cars.sid, investors.name\n"
-                                                                                      "ORDER BY debtAmount DESC";
+        "GROUP BY cars.id, cars.sid, investors.name\n"
+        "ORDER BY debtAmount DESC";
 
     result = db.executeGet(query);
     return result;
@@ -689,13 +690,13 @@ QVariantList ReportOperations::getAllDebtsReport(QDate fromDate, QDate toDate)
     QString query =
         "SELECT\n"
         "   COUNT(*) AS rentCount,\n"
-        "   SUM(COALESCE(CAST(REGEXP_SUBSTR(events.description, '[0-9]+' , 1, 1) AS UNSIGNED), 0)) AS totalDebtAmount\n"
+        "   SUM(COALESCE(CAST(REGEXP_SUBSTR(events.description, '[0-9]+') AS UNSIGNED), 0)) AS totalDebtAmount\n"
         "FROM events\n"
         "JOIN types ON events.typeId = types.id\n"
         "WHERE events.amount = 0\n"
         "AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-                                                                                      "AND types.name = 'Аренда'";
+        "AND types.name = 'Аренда'";
 
     result = db.executeGet(query);
     return result;

@@ -30,6 +30,7 @@ signals:
 
 private slots:
     void on_pushButton_clicked();
+    void on_paidButton_clicked();
 
 private:
     Ui::addupdatewindowEvents *ui;

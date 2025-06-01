@@ -64,7 +64,7 @@ public:
 
     QVariantList static getChargesByCarReport(int carId, QDate fromDate, QDate toDate);
     QVariantList static getAllChargesByCarReport(int carId, QDate fromDate, QDate toDate);
-
+ 
     QVariantList static getUserReport(int userId, QDate fromDate, QDate toDate);
     QVariantList static getAllUserReport(int userId, QDate fromDate, QDate toDate);
 
