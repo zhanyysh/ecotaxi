@@ -665,13 +665,12 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "   cars.sid,\n"
         "   investors.name AS investorName,\n"
         "   COUNT(events.id) AS rentCount,\n"
-        "   SUM(COALESCE(CAST(REGEXP_SUBSTR(events.description, '[0-9]+') AS UNSIGNED), 0)) AS debtAmount\n"
+        "   SUM(COALESCE(events.dolg, 0)) AS debtAmount\n"
         "FROM cars\n"
         "LEFT JOIN events ON events.carId = cars.id\n"
         "LEFT JOIN types ON events.typeId = types.id\n"
         "LEFT JOIN investors ON investors.id = cars.investorId\n"
         "WHERE types.name = 'Аренда'\n"
-        "AND events.amount = 0\n"
         "AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
         "GROUP BY cars.id, cars.sid, investors.name\n"
@@ -690,11 +689,10 @@ QVariantList ReportOperations::getAllDebtsReport(QDate fromDate, QDate toDate)
     QString query =
         "SELECT\n"
         "   COUNT(*) AS rentCount,\n"
-        "   SUM(COALESCE(CAST(REGEXP_SUBSTR(events.description, '[0-9]+') AS UNSIGNED), 0)) AS totalDebtAmount\n"
+        "   SUM(COALESCE(events.dolg, 0)) AS totalDebtAmount\n"
         "FROM events\n"
         "JOIN types ON events.typeId = types.id\n"
-        "WHERE events.amount = 0\n"
-        "AND events.date BETWEEN '" +
+        "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
         "AND types.name = 'Аренда'";
 
