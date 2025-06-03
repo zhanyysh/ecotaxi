@@ -54,6 +54,7 @@ private:
     eSetting mode;
 
     void populateComboBoxes();
+    void updateFilterComboBoxes();
 };
 
 #endif // EDITABLEREPORT_H
