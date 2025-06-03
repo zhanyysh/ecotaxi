@@ -65,8 +65,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         scripts/columnselectiondialog.h scripts/columnselectiondialog.cpp
         enums/eSetting.h
         scripts/awss3uploader.h scripts/awss3uploader.cpp
-
-
+        managers/excelmanager.h managers/excelmanager.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET EcoTaxiQt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
