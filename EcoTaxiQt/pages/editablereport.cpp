@@ -217,6 +217,7 @@ void EditableReport::setTable()
         for (const QVariant &fine : report)
         {
             QVariantList rp = fine.toList();
+            QDate fineDate = rp[1].toDate();
             QString car = rp[2].toString();
             QString driver = rp[3].toString();
             QString time = rp[4].toTime().toString("HH:mm:ss");
@@ -225,23 +226,38 @@ void EditableReport::setTable()
             QString isPaid = rp[7].toBool() ? "Да" : "Нет";
             QString desc = rp[8].toString();
 
-            if ((carFilter.isEmpty() || car == carFilter) &&
-                (driverFilter.isEmpty() || driver == driverFilter) &&
-                (descriptionFilter.isEmpty() || desc.contains(descriptionFilter, Qt::CaseInsensitive)) &&
-                (searchText.isEmpty() || car.contains(searchText, Qt::CaseInsensitive) || driver.contains(searchText, Qt::CaseInsensitive) || amount.contains(searchText, Qt::CaseInsensitive) || desc.contains(searchText, Qt::CaseInsensitive)))
-            {
-                QList<QStandardItem *> row;
-                row << new QStandardItem(rp[0].toString());
-                row << new QStandardItem(rp[1].toDate().toString("dd.MM.yyyy"));
-                row << new QStandardItem(time);
-                row << new QStandardItem(fid);
-                row << new QStandardItem(car);
-                row << new QStandardItem(driver);
-                row << new QStandardItem(amount);
-                row << new QStandardItem(isPaid);
-                row << new QStandardItem(desc);
-                model->appendRow(row);
-            }
+            // Apply filters
+            if (!carFilter.isEmpty() && car != carFilter)
+                continue;
+            if (!driverFilter.isEmpty() && driver != driverFilter)
+                continue;
+            if (!descriptionFilter.isEmpty() && !desc.contains(descriptionFilter, Qt::CaseInsensitive))
+                continue;
+
+            // Apply date filter
+            if (fineDate.isValid() && (fineDate < startDate || fineDate > endDate))
+                continue;
+
+            // Apply search bar logic
+            if (!searchText.isEmpty() &&
+                !car.contains(searchText, Qt::CaseInsensitive) &&
+                !driver.contains(searchText, Qt::CaseInsensitive) &&
+                !amount.contains(searchText, Qt::CaseInsensitive) &&
+                !desc.contains(searchText, Qt::CaseInsensitive) &&
+                !fid.contains(searchText, Qt::CaseInsensitive))
+                continue;
+
+            QList<QStandardItem *> row;
+            row << new QStandardItem(rp[0].toString());
+            row << new QStandardItem(fineDate.toString("dd.MM.yyyy"));
+            row << new QStandardItem(time);
+            row << new QStandardItem(fid);
+            row << new QStandardItem(car);
+            row << new QStandardItem(driver);
+            row << new QStandardItem(amount);
+            row << new QStandardItem(isPaid);
+            row << new QStandardItem(desc);
+            model->appendRow(row);
         }
         break;
     }
@@ -287,6 +303,8 @@ void EditableReport::on_AddButton_clicked()
     connect(w, SIGNAL(closed()), &loop, SLOT(quit()));
     loop.exec();
 
+    populateComboBoxes();
+    updateFilterComboBoxes();
     setTable();
 }
 
@@ -307,6 +325,8 @@ void EditableReport::on_EditButton_clicked()
         connect(w, SIGNAL(closed()), &loop, SLOT(quit()));
         loop.exec();
 
+        populateComboBoxes();
+        updateFilterComboBoxes();
         setTable();
     }
 }
@@ -362,6 +382,8 @@ void EditableReport::onYes()
             break;
         }
 
+        populateComboBoxes();
+        updateFilterComboBoxes();
         setTable();
     }
 }
@@ -393,4 +415,44 @@ void EditableReport::on_ToPDFButton_clicked()
             break;
     }
     PDFmanager::exportToPDF(title, type, { ui->tableView->model() });
+}
+
+void EditableReport::updateFilterComboBoxes()
+{
+    switch (this->mode) {
+    case eSetting::Repairs: {
+        ui->carFilterComboBox->blockSignals(true);
+        ui->carFilterComboBox->clear();
+        ui->carFilterComboBox->addItem("");
+        QStringList repairCars = ui->carFilterComboBox->property("repairCars").toStringList();
+        ui->carFilterComboBox->addItems(repairCars);
+        ui->carFilterComboBox->blockSignals(false);
+
+        ui->driverFilterComboBox->blockSignals(true);
+        ui->driverFilterComboBox->clear();
+        ui->driverFilterComboBox->addItem("");
+        QStringList repairInvestors = ui->driverFilterComboBox->property("repairInvestors").toStringList();
+        ui->driverFilterComboBox->addItems(repairInvestors);
+        ui->driverFilterComboBox->blockSignals(false);
+        break;
+    }
+    case eSetting::Fines: {
+        ui->carFilterComboBox->blockSignals(true);
+        ui->carFilterComboBox->clear();
+        ui->carFilterComboBox->addItem("");
+        QStringList finesCars = ui->carFilterComboBox->property("finesCars").toStringList();
+        ui->carFilterComboBox->addItems(finesCars);
+        ui->carFilterComboBox->blockSignals(false);
+
+        ui->driverFilterComboBox->blockSignals(true);
+        ui->driverFilterComboBox->clear();
+        ui->driverFilterComboBox->addItem("");
+        QStringList finesDrivers = ui->driverFilterComboBox->property("finesDrivers").toStringList();
+        ui->driverFilterComboBox->addItems(finesDrivers);
+        ui->driverFilterComboBox->blockSignals(false);
+        break;
+    }
+    default:
+        break;
+    }
 }

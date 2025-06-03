@@ -665,7 +665,7 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "   cars.sid,\n"
         "   investors.name AS investorName,\n"
         "   COUNT(events.id) AS rentCount,\n"
-        "   SUM(COALESCE(events.amount, 0)) AS debtAmount\n"
+        "   SUM(COALESCE(events.dolg, 0)) AS debtAmount\n"
         "FROM cars\n"
         "LEFT JOIN events ON events.carId = cars.id\n"
         "LEFT JOIN types ON events.typeId = types.id\n"
@@ -689,7 +689,7 @@ QVariantList ReportOperations::getAllDebtsReport(QDate fromDate, QDate toDate)
     QString query =
         "SELECT\n"
         "   COUNT(*) AS rentCount,\n"
-        "   SUM(COALESCE(events.amount, 0)) AS totalDebtAmount\n"
+        "   SUM(COALESCE(events.dolg, 0)) AS totalDebtAmount\n"
         "FROM events\n"
         "JOIN types ON events.typeId = types.id\n"
         "WHERE events.date BETWEEN '" +
