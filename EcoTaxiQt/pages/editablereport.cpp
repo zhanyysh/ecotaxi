@@ -67,10 +67,10 @@ void EditableReport::openReport(eSetting mode)
         ui->startDateEdit->show();
         ui->endDateEdit->show();
         ui->carFilterComboBox->show();
-        ui->driverFilterComboBox->show(); // used for investor in repairs
+        ui->driverFilterComboBox->show();
         ui->daysFilterLineEdit->show();
         ui->descriptionFilterLineEdit->show();
-        ui->searchLineEdit->show(); // <-- enable search bar for repairs
+        ui->searchLineEdit->show();
         if (QLabel *label = this->findChild<QLabel*>("label_4")) label->show();
         if (QLabel *label = this->findChild<QLabel*>("label")) label->show();
         if (QLabel *label = this->findChild<QLabel*>("label_2")) { label->show(); label->setText("Инвестор:"); }
@@ -148,7 +148,7 @@ void EditableReport::setTable()
         QString investorFilter = ui->driverFilterComboBox->currentText();
         QString daysFilter = ui->daysFilterLineEdit->text();
         QString descriptionFilter = ui->descriptionFilterLineEdit->text();
-        QString searchText = ui->searchLineEdit->text(); // Search bar text
+        QString searchText = ui->searchLineEdit->text();
         model->setHorizontalHeaderLabels({ "ID", "Машина", "Инвестор", "Дней", "От", "До", "Описание" });
 
         QVariantList report = ui->checkBox->isChecked()
@@ -169,10 +169,29 @@ void EditableReport::setTable()
                 continue;
             if (!investorFilter.isEmpty() && investor != investorFilter)
                 continue;
-            if (!daysFilter.isEmpty() && days != daysFilter.toInt())
-                continue;
+            // Filter by days - exact match if filter text is not empty and is a valid integer
+            if (!daysFilter.isEmpty()) {
+                bool ok;
+                int filterDays = daysFilter.toInt(&ok);
+                if (ok && days != filterDays)
+                    continue;
+                // If filter text is not a valid integer, skip filtering by days (or you could add an error indicator)
+            }
             if (!descriptionFilter.isEmpty() && !desc.contains(descriptionFilter, Qt::CaseInsensitive))
                 continue;
+
+            // Apply date filter: check for overlap between [fromDate, toDate] and [startDate, endDate]
+            // Overlap exists if (start1 <= end2) AND (end1 >= start2)
+            if (fromDate.isValid() && toDate.isValid() &&
+                (fromDate > endDate || toDate < startDate))
+            {
+                 continue; // Skip if there is no overlap
+            }
+             // Also skip if either date is invalid and date filter is active (though QDateEdit ensures valid dates normally)
+            if ((!fromDate.isValid() || !toDate.isValid()) && (startDate.isValid() || endDate.isValid())) {
+                 // This case should be rare with QDateEdit, but included for robustness.
+                 // If date edits allow invalid states, you might need more complex logic.
+            }
 
             // Apply search bar logic: match any column
             if (!searchText.isEmpty() &&
@@ -183,10 +202,6 @@ void EditableReport::setTable()
                 !rp[4].toString().contains(searchText, Qt::CaseInsensitive) && // От
                 !rp[5].toString().contains(searchText, Qt::CaseInsensitive) && // До
                 !desc.contains(searchText, Qt::CaseInsensitive))              // Описание
-                continue;
-
-            // Apply date filter
-            if (fromDate.isValid() && (fromDate < startDate || fromDate > endDate))
                 continue;
 
             QList<QStandardItem *> row;
