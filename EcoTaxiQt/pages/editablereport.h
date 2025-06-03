@@ -8,11 +8,12 @@
 #include <QStandardItem>
 #include <QItemSelectionModel>
 #include <QLineEdit>
-#include <QComboBox> // Add this line
-#include <QStringList> // Add this line
+#include <QComboBox>
+#include <QStringList>
 #include "../managers/operations.h"
 #include "../managers/reportoperations.h"
 #include "../managers/pdfmanager.h"
+#include "../managers/excelmanager.h"
 #include "../managers/nm.h"
 #include "customdialog.h"
 #include "addupdaterepair.h"
@@ -40,6 +41,7 @@ private slots:
     void on_EditButton_clicked();
     void on_DeleteButton_clicked();
     void on_ToPDFButton_clicked();
+    void on_ToExcelButton_clicked();
 
     void on_checkBox_checkStateChanged(Qt::CheckState state);
 

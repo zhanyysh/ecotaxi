@@ -49,6 +49,8 @@ private slots:
 
     void on_ToPDFButton_clicked();
 
+    void on_ToExcelButton_clicked();
+
     void handleDoubleClick(const QModelIndex &index);
 
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
