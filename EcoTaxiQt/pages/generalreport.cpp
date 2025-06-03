@@ -376,23 +376,20 @@ void GeneralReport::setTable()
         break;
 
     case Report::Debts:
-        model->setHorizontalHeaderLabels({"id", "Машина", "Инвестор", "Количество", "Сумма"});
+        model->setHorizontalHeaderLabels({"id", "Водитель", "Машина", "Инвестор", "Долг"});
         for (const QVariant &debt : ReportOperations::getDebtsReport(this->fromDate, this->toDate))
         {
             QVariantList debts = debt.toList();
             QList<QStandardItem *> row;
 
             row.append(new QStandardItem(debts[0].toString()));  // id
-            row.append(new QStandardItem(debts[1].toString()));  // carId
-            row.append(new QStandardItem(debts[2].toString()));  // investor
+            row.append(new QStandardItem(debts[3].toString()));  // driverName
+            row.append(new QStandardItem(debts[1].toString()));  // licensePlate
+            row.append(new QStandardItem(debts[2].toString()));  // investorName
             
-            QStandardItem *rentCountItem = new QStandardItem();
-            rentCountItem->setData(debts[3].toInt(), Qt::DisplayRole);
-            row.append(rentCountItem); // rentCount
-
-            QStandardItem *dentAmountItem = new QStandardItem();
-            dentAmountItem->setData(debts[4].toInt(), Qt::DisplayRole);
-            row.append(dentAmountItem); // dentAmount
+            QStandardItem *debtAmountItem = new QStandardItem();
+            debtAmountItem->setData(debts[4].toInt(), Qt::DisplayRole);
+            row.append(debtAmountItem); // debtAmount
 
             model->appendRow(row);
         }
@@ -767,10 +764,10 @@ void GeneralReport::setTableSizes()
 
     case Report::Types:
     case Report::Debts:
-        ui->tableView->setColumnWidth(1, 226);
-        ui->tableView->setColumnWidth(2, 226);
-        ui->tableView->setColumnWidth(3, 226);
-        ui->tableView->setColumnWidth(4, 226);
+        ui->tableView->setColumnWidth(1, 200);  // Водитель
+        ui->tableView->setColumnWidth(2, 150);  // Машина
+        ui->tableView->setColumnWidth(3, 200);  // Инвестор
+        ui->tableView->setColumnWidth(4, 150);  // Долг
         break;
 
     case Report::Drivers:
