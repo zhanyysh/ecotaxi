@@ -79,7 +79,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="label_date">
        <property name="minimumSize">
         <size>
          <width>80</width>
@@ -92,28 +92,44 @@
       </widget>
      </item>
      <item>
-      <widget class="QDateEdit" name="startDateEdit">
+      <widget class="QPushButton" name="startDateButton">
        <property name="minimumSize">
         <size>
          <width>150</width>
          <height>0</height>
         </size>
        </property>
-       <property name="displayFormat">
-        <string>yyyy-MM-dd</string>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black; border-radius: 10px;</string>
+       </property>
+       <property name="text">
+        <string>01.01.0001</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDateEdit" name="endDateEdit">
+      <spacer name="horizontalSpacer_AfterDateButtons">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>20</size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="endDateButton">
        <property name="minimumSize">
         <size>
          <width>150</width>
          <height>0</height>
         </size>
        </property>
-       <property name="displayFormat">
-        <string>yyyy-MM-dd</string>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black; border-radius: 10px;</string>
+       </property>
+       <property name="text">
+        <string>02.02.0002</string>
        </property>
       </widget>
      </item>
@@ -138,7 +154,20 @@
          <height>0</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black;</string>
+       </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_AfterCarFilterComboBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>20</size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QLabel" name="label_2">
@@ -161,7 +190,20 @@
          <height>0</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black;</string>
+       </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_AfterDriverFilterComboBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>20</size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QLabel" name="label_3">
@@ -190,6 +232,16 @@
       </widget>
      </item>
      <item>
+      <spacer name="horizontalSpacer_AfterDescriptionFilterLineEdit">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>20</size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QLabel" name="label_days">
        <property name="minimumSize">
         <size>
@@ -201,6 +253,16 @@
         <string>Дней:</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_BeforeResetFiltersButton">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>40</size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QLineEdit" name="daysFilterLineEdit">
@@ -215,6 +277,22 @@
        </property>
        <property name="styleSheet">
         <string notr="true">border: 1px solid black;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="resetFiltersButton">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black; border-radius: 10px;</string>
+       </property>
+       <property name="text">
+        <string>отменить</string>
        </property>
       </widget>
      </item>

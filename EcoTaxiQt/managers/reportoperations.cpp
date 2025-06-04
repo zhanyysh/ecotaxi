@@ -708,7 +708,7 @@ QVariantList ReportOperations::getFinesByCarsReport(QDate fromDate, QDate toDate
     QString query =
         "SELECT\n"
         "    cars.id AS carId,\n"
-        "    cars.sid AS carSid,\n"
+        "    cars.licensePlate AS carLicensePlate,\n"
         "    COALESCE(SUM(fines.amount), 0) AS totalFinesAmount,\n"
         "    COALESCE(COUNT(fines.id), 0) AS totalFinesCount,\n"
         "    COALESCE(SUM(CASE WHEN fines.isPaid THEN fines.amount ELSE 0 END), 0) AS paidFinesAmount,\n"
@@ -719,7 +719,7 @@ QVariantList ReportOperations::getFinesByCarsReport(QDate fromDate, QDate toDate
         "LEFT JOIN fines ON fines.carId = cars.id\n"
         "WHERE fines.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-                                                                                      "GROUP BY cars.id, cars.sid\n";
+                                                                                      "GROUP BY cars.id, cars.licensePlate\n";
 
     QVariantList result = db.executeGet(query);
 
@@ -1421,7 +1421,8 @@ QVariantList ReportOperations::getRepairsReport()
     QString query =
         "SELECT "
         "   repairs.id,\n"
-        "   cars.sid AS carId,\n"
+        "   cars.id AS carId,\n"
+        "   cars.licensePlate AS carLicensePlate,\n"
         "   (SELECT investors.name FROM investors WHERE investors.id = cars.investorId) AS carInvestor,\n"
         "   COALESCE(DATEDIFF(IFNULL(repairs.toDate, CURRENT_DATE()), repairs.fromDate), 0) AS daysCount,\n"
         "   IFNULL(repairs.fromDate, '-') AS fromDate,\n"

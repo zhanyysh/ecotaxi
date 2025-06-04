@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QStringList>
+
 #include "../managers/operations.h"
 #include "../managers/reportoperations.h"
 #include "../managers/pdfmanager.h"
@@ -17,6 +18,10 @@
 #include "../managers/nm.h"
 #include "customdialog.h"
 #include "addupdaterepair.h"
+#include "calendarpage.h"
+
+#include <QPushButton>
+#include <QDate>
 
 namespace Ui {
 class EditableReport;
@@ -48,12 +53,22 @@ private slots:
     void onYes();
     void onNo();
 
+    void on_resetFiltersButton_clicked();
+
+    void on_startDateButton_clicked();
+    void on_endDateButton_clicked();
+    void setStartDate(QDate date);
+    void setEndDate(QDate date);
+
 private:
     Ui::EditableReport *ui;
 
     nm *nav;
 
     eSetting mode;
+
+    QDate fromDate;
+    QDate toDate;
 
     void populateComboBoxes();
     void updateFilterComboBoxes();

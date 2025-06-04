@@ -22,6 +22,12 @@ GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GeneralReport::onSectionResized);
 
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &GeneralReport::onSortIndicatorChanged);
+
+    // Connect car filter combo box signal directly to setTable
+    connect(ui->carFilterComboBox, &QComboBox::currentTextChanged, this, &GeneralReport::setTable);
+
+    // Connect driver filter combo box signal directly to setTable
+    connect(ui->driverFilterComboBox, &QComboBox::currentTextChanged, this, &GeneralReport::setTable);
 }
 
 GeneralReport::~GeneralReport()
@@ -50,6 +56,14 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
     setBottomTable();
 
     setTableSizes();
+
+    // Populate car combo box if in FinesByCars mode
+    if (this->mode == Report::FinesByCars) {
+        populateCarComboBox();
+    } else if (this->mode == Report::FinesByDrivers) {
+        // Populate driver combo box if in FinesByDrivers mode
+        populateDriverComboBox();
+    }
 }
 
 void GeneralReport::setHeader()
@@ -106,11 +120,19 @@ void GeneralReport::setHeader()
     case Report::FinesByCars:
         ui->Header->setText("ПО ШТРАФАМ ПО МАШИНАМ");
         ui->ReportButton->setText("ОТЧЕТ ПО МАШИНЕ");
+        ui->label_car_filter->show();
+        ui->carFilterComboBox->show();
+        ui->label_driver_filter->hide();
+        ui->driverFilterComboBox->hide();
         break;
     
     case Report::FinesByDrivers:
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЯМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
+        ui->label_car_filter->hide();
+        ui->carFilterComboBox->hide();
+        ui->label_driver_filter->show();
+        ui->driverFilterComboBox->show();
         break;
     }
 }
@@ -397,36 +419,67 @@ void GeneralReport::setTable()
         break;
 
     case Report::FinesByCars:
-        model->setHorizontalHeaderLabels({"id", "Машина", "Сумма", "Количество", "Оплачено", "Количество", "Не оплачено", "Количество"});
-        for (const QVariant &fine : ReportOperations::getFinesByCarsReport(this->fromDate, this->toDate))
+    {
+        // Set headers to match the order of data in the row
+        model->setHorizontalHeaderLabels({ "ID", "Машина", "Сумма", "Количество", "Оплачено", "Количество", "Не оплачено", "Количество" });
+
+        QVariantList report = ReportOperations::getFinesByCarsReport(this->fromDate, this->toDate);
+        QString selectedCar = ui->carFilterComboBox->currentText();
+
+        QVariantList filteredReport;
+        if (selectedCar.isEmpty()) {
+            // If no car is selected, use the full report
+            filteredReport = report;
+        } else {
+            // If a car is selected, filter the report
+            for (const QVariant &fine : report) {
+                QVariantList fineData = fine.toList();
+                // Assuming carLicensePlate is at index 1 in the result of getFinesByCarsReport
+                if (fineData.size() > 1 && fineData[1].toString() == selectedCar) {
+                    filteredReport.append(fine);
+                }
+            }
+        }
+
+        for (const QVariant &fine : filteredReport)
         {
             QVariantList fines = fine.toList();
             QList<QStandardItem *> row;
 
-            row.append(new QStandardItem(fines[0].toString()));  // id
-            row.append(new QStandardItem(fines[1].toString()));  // carSid
-            row.append(new QStandardItem());
+            // Append data in the original order: carId (ID), carLicensePlate (Машина), then the rest
+            row.append(new QStandardItem(fines[0].toString()));  // ID (carId)
+            row.append(new QStandardItem(fines[1].toString()));  // Машина (carLicensePlate)
+            row.append(new QStandardItem()); // Сумма (totalFinesAmount)
             row[2]->setData(fines[2].toInt(), Qt::DisplayRole);
-            row.append(new QStandardItem());
+            row.append(new QStandardItem()); // Количество (totalFinesCount)
             row[3]->setData(fines[3].toInt(), Qt::DisplayRole);
-            row.append(new QStandardItem());
+            row.append(new QStandardItem()); // Оплачено (paidFinesAmount)
             row[4]->setData(fines[4].toInt(), Qt::DisplayRole);
-            row.append(new QStandardItem());
+            row.append(new QStandardItem()); // Количество (paidFinesCount)
             row[5]->setData(fines[5].toInt(), Qt::DisplayRole);
-            row.append(new QStandardItem());
+            row.append(new QStandardItem()); // Не оплачено (notPaidFinesAmount)
             row[6]->setData(fines[6].toInt(), Qt::DisplayRole);
-            row.append(new QStandardItem());
+            row.append(new QStandardItem()); // Количество (notPaidFinesCount)
             row[7]->setData(fines[7].toInt(), Qt::DisplayRole);
 
             model->appendRow(row);
         }
+    }
         break;
     
     case Report::FinesByDrivers:
+    {
         model->setHorizontalHeaderLabels({"id", "Водитель", "Сумма", "Количество", "Оплачено", "Количество", "Не оплачено", "Количество"});
         for (const QVariant &fine : ReportOperations::getFinesByDriversReport(this->fromDate, this->toDate))
         {
             QVariantList fines = fine.toList();
+            QString selectedDriver = ui->driverFilterComboBox->currentText();
+
+            // Apply driver filter
+            if (!selectedDriver.isEmpty() && fines[1].toString() != selectedDriver) {
+                continue;
+            }
+
             QList<QStandardItem *> row;
 
             row.append(new QStandardItem(fines[0].toString()));  // id
@@ -446,6 +499,7 @@ void GeneralReport::setTable()
 
             model->appendRow(row);
         }
+    }
         break;
 
     default:
@@ -454,6 +508,7 @@ void GeneralReport::setTable()
 
     ui->tableView->setModel(model);
 
+    // Ensure the first column (ID) is hidden after setting the model
     ui->tableView->setColumnHidden(0, true);
 
     if (this->mode == Report::Users || this->mode == Report::Users2)
@@ -465,6 +520,19 @@ void GeneralReport::setTable()
         ui->SecondReportButton->setDisabled(true);
     }
 
+    // Hide car filter combo box for other reports
+    if (this->mode != Report::FinesByCars) {
+        ui->label_car_filter->hide();
+        ui->carFilterComboBox->hide();
+    } else {
+        ui->label_car_filter->show();
+        ui->carFilterComboBox->show();
+    }
+
+    // Update bottom table and sizes after setting the main table
+    setBottomTable();
+    setTableSizes();
+
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
@@ -473,6 +541,14 @@ void GeneralReport::setTable()
 
     if (this->selectedColumn != -1)
         ui->tableView->sortByColumn(this->selectedColumn, this->sortOrder);
+
+    if (this->mode == Report::FinesByDrivers) {
+        ui->label_driver_filter->show();
+        ui->driverFilterComboBox->show();
+    } else {
+        ui->label_driver_filter->hide();
+        ui->driverFilterComboBox->hide();
+    }
 }
 
 void GeneralReport::setBottomTable()
@@ -995,20 +1071,20 @@ void GeneralReport::setFromDate(QDate date)
 {
     this->fromDate = date;
     ui->FromDateButton->setText(date.toString("dd.MM.yyyy"));
+    
+    // Update table after date change
+    setTable();
+    setBottomTable();
 }
 
 void GeneralReport::setToDate(QDate date)
 {
     this->toDate = date;
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
-}
-
-void GeneralReport::on_FilterButton_clicked()
-{
+    
+    // Update table after date change
     setTable();
     setBottomTable();
-
-    setTableSizes();
 }
 
 void GeneralReport::on_ToPDFButton_clicked()
@@ -1165,4 +1241,49 @@ void GeneralReport::handleDoubleClick(const QModelIndex &index)
 void GeneralReport::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order) {
     this->selectedColumn = logicalIndex;
     this->sortOrder = order;
+}
+
+void GeneralReport::populateCarComboBox()
+{
+    ui->carFilterComboBox->blockSignals(true); // Block signals to avoid triggering setTable multiple times
+    ui->carFilterComboBox->clear();
+    ui->carFilterComboBox->addItem(""); // Add an empty item for no filter
+
+    // Get unique car license plates from ReportOperations (or a dedicated function)
+    // For now, let's reuse getFinesReport to get all car license plates present in fines
+    QStringList cars;
+    QVariantList allFines = ReportOperations::getFinesReport();
+    for (const QVariant &fine : allFines) {
+        QVariantList fineData = fine.toList();
+        QString carLicensePlate = fineData[2].toString(); // carLicensePlate is at index 2 in getFinesReport result
+        if (!cars.contains(carLicensePlate) && !carLicensePlate.isEmpty() && carLicensePlate != "-") { // Avoid duplicates, empty, and removed entries
+            cars << carLicensePlate;
+        }
+    }
+    cars.sort(); // Sort the list alphabetically
+
+    ui->carFilterComboBox->addItems(cars);
+    ui->carFilterComboBox->blockSignals(false);
+}
+
+void GeneralReport::populateDriverComboBox()
+{
+    ui->driverFilterComboBox->blockSignals(true); // Block signals
+    ui->driverFilterComboBox->clear();
+    ui->driverFilterComboBox->addItem(""); // Add empty item
+
+    QStringList drivers;
+    // Reuse getFinesByDriversReport to get driver names present in the report
+    QVariantList report = ReportOperations::getFinesByDriversReport(QDate(2000,1,1), QDate(2099,12,31)); // Get all drivers with fines regardless of date
+    for (const QVariant &fine : report) {
+        QVariantList fineData = fine.toList();
+        QString driverName = fineData[1].toString(); // driverName is at index 1
+        if (!drivers.contains(driverName) && !driverName.isEmpty() && driverName != "-") {
+            drivers << driverName;
+        }
+    }
+    drivers.sort(); // Sort the list
+
+    ui->driverFilterComboBox->addItems(drivers);
+    ui->driverFilterComboBox->blockSignals(false); // Unblock signals
 }
