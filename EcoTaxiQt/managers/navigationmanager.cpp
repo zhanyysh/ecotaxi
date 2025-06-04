@@ -267,3 +267,16 @@ bool navigationManager::openFines(int index, int id, QDate from, QDate to)
     }
     return false;
 }
+
+bool navigationManager::openPaymentHistory()
+{
+    if (!paymentHistoryPage) {
+        paymentHistoryPage = new PaymentHistory(this);
+        ui->pages->insertWidget(6, paymentHistoryPage);
+        connect(paymentHistoryPage, &PaymentHistory::backClicked, this, [this]() {
+            this->changeWindow(0); // Возврат на главную страницу
+        });
+    }
+    changeWindow(6);
+    return true;
+}

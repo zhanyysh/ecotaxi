@@ -66,6 +66,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         enums/eSetting.h
         scripts/awss3uploader.h scripts/awss3uploader.cpp
         managers/excelmanager.h managers/excelmanager.cpp
+        pages/paymenthistory.h pages/paymenthistory.cpp pages/paymenthistory.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET EcoTaxiQt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
