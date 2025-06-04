@@ -46,6 +46,8 @@ private slots:
     void onYes();
     void onNo();
 
+    void on_resetFiltersButton_clicked();
+
 private:
     Ui::EditableReport *ui;
 

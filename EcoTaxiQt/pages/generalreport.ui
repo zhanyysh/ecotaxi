@@ -161,18 +161,68 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignLeft">
-      <widget class="QPushButton" name="FilterButton">
+     <item>
+      <widget class="QLabel" name="label_car_filter">
        <property name="minimumSize">
         <size>
-         <width>250</width>
-         <height>52</height>
+         <width>80</width>
+         <height>0</height>
         </size>
        </property>
        <property name="text">
-        <string>Фильтр</string>
+        <string>Машина:</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="carFilterComboBox">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_AfterCarFilterComboBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>20</size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_driver_filter">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Водитель:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="driverFilterComboBox">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_AfterDriverFilterComboBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

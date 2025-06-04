@@ -42,8 +42,6 @@ private slots:
 
     void on_SecondReportButton_clicked();
 
-    void on_FilterButton_clicked();
-
     void on_FromDateButton_clicked();
     void on_ToDateButton_clicked();
 
@@ -80,6 +78,14 @@ private:
 
     QDate fromDate;
     QDate toDate;
+
+    // Added for car filtering
+    QStringList carLicensePlates;
+    void populateCarComboBox();
+
+    // Added for driver filtering
+    QStringList driverNames;
+    void populateDriverComboBox();
 };
 
 #endif // GENERALREPORT_H

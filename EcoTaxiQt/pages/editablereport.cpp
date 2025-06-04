@@ -49,8 +49,8 @@ void EditableReport::populateComboBoxes()
     QVariantList repairs = ReportOperations::getRepairsReport();
     for (const QVariant &repair : repairs) {
         QVariantList rp = repair.toList();
-        QString car = rp[1].toString(); // carSid
-        QString investor = rp[2].toString();
+        QString car = rp[2].toString(); // carLicensePlate
+        QString investor = rp[3].toString();
         if (!repairCars.contains(car)) repairCars << car;
         if (!repairInvestors.contains(investor)) repairInvestors << investor;
     }
@@ -69,12 +69,12 @@ void EditableReport::openReport(eSetting mode)
         ui->carFilterComboBox->show();
         ui->driverFilterComboBox->show();
         ui->daysFilterLineEdit->show();
-        ui->descriptionFilterLineEdit->show();
+        ui->descriptionFilterLineEdit->hide();
         ui->searchLineEdit->show();
         if (QLabel *label = this->findChild<QLabel*>("label_4")) label->show();
         if (QLabel *label = this->findChild<QLabel*>("label")) label->show();
         if (QLabel *label = this->findChild<QLabel*>("label_2")) { label->show(); label->setText("Инвестор:"); }
-        if (QLabel *label = this->findChild<QLabel*>("label_3")) label->show();
+        if (QLabel *label = this->findChild<QLabel*>("label_3")) label->hide();
         if (QLabel *label = this->findChild<QLabel*>("label_days")) label->show();
 
         // Set car/investor combos for repairs
@@ -100,12 +100,12 @@ void EditableReport::openReport(eSetting mode)
         ui->carFilterComboBox->show();
         ui->driverFilterComboBox->show();
         ui->daysFilterLineEdit->hide();
-        ui->descriptionFilterLineEdit->show();
+        ui->descriptionFilterLineEdit->hide();
         ui->searchLineEdit->show();
         if (QLabel *label = this->findChild<QLabel*>("label_4")) label->show();
         if (QLabel *label = this->findChild<QLabel*>("label")) label->show();
         if (QLabel *label = this->findChild<QLabel*>("label_2")) { label->show(); label->setText("Водитель:"); }
-        if (QLabel *label = this->findChild<QLabel*>("label_3")) label->show();
+        if (QLabel *label = this->findChild<QLabel*>("label_3")) label->hide();
         if (QLabel *label = this->findChild<QLabel*>("label_days")) label->hide();
 
         // Set car/driver combos for fines
@@ -157,15 +157,15 @@ void EditableReport::setTable()
 
         for (const QVariant &repair : report) {
             QVariantList rp = repair.toList();
-            QString carSid = rp[1].toString();
-            QString investor = rp[2].toString();
-            int days = rp[3].toInt();
-            QDate fromDate = QDate::fromString(rp[4].toString(), "yyyy-MM-dd");
-            QDate toDate = QDate::fromString(rp[5].toString(), "yyyy-MM-dd");
-            QString desc = rp[6].toString();
+            QString carLicensePlate = rp[2].toString();
+            QString investor = rp[3].toString();
+            int days = rp[4].toInt();
+            QDate fromDate = QDate::fromString(rp[5].toString(), "yyyy-MM-dd");
+            QDate toDate = QDate::fromString(rp[6].toString(), "yyyy-MM-dd");
+            QString desc = rp[7].toString();
 
             // Apply filters
-            if (!carFilter.isEmpty() && carSid != carFilter)
+            if (!carFilter.isEmpty() && carLicensePlate != carFilter)
                 continue;
             if (!investorFilter.isEmpty() && investor != investorFilter)
                 continue;
@@ -177,6 +177,7 @@ void EditableReport::setTable()
                     continue;
                 // If filter text is not a valid integer, skip filtering by days (or you could add an error indicator)
             }
+            // Keep description filter logic for now based on previous user requests
             if (!descriptionFilter.isEmpty() && !desc.contains(descriptionFilter, Qt::CaseInsensitive))
                 continue;
 
@@ -196,23 +197,23 @@ void EditableReport::setTable()
             // Apply search bar logic: match any column
             if (!searchText.isEmpty() &&
                 !rp[0].toString().contains(searchText, Qt::CaseInsensitive) && // ID
-                !carSid.contains(searchText, Qt::CaseInsensitive) &&          // Машина
+                !carLicensePlate.contains(searchText, Qt::CaseInsensitive) &&          // Машина
                 !investor.contains(searchText, Qt::CaseInsensitive) &&        // Инвестор
                 !QString::number(days).contains(searchText, Qt::CaseInsensitive) && // Дней
-                !rp[4].toString().contains(searchText, Qt::CaseInsensitive) && // От
-                !rp[5].toString().contains(searchText, Qt::CaseInsensitive) && // До
+                !rp[5].toString().contains(searchText, Qt::CaseInsensitive) && // От
+                !rp[6].toString().contains(searchText, Qt::CaseInsensitive) && // До
                 !desc.contains(searchText, Qt::CaseInsensitive))              // Описание
                 continue;
 
             QList<QStandardItem *> row;
             row << new QStandardItem(rp[0].toString());
-            row << new QStandardItem(carSid);
+            row << new QStandardItem(carLicensePlate);
             row << new QStandardItem(investor);
             QStandardItem *item = new QStandardItem();
             item->setData(days, Qt::DisplayRole);
             row << item;
-            row << new QStandardItem(rp[4].toString());
             row << new QStandardItem(rp[5].toString());
+            row << new QStandardItem(rp[6].toString());
             row << new QStandardItem(desc);
             model->appendRow(row);
         }
@@ -232,11 +233,11 @@ void EditableReport::setTable()
         for (const QVariant &fine : report)
         {
             QVariantList rp = fine.toList();
-            QDate fineDate = rp[1].toDate();
+            QDate fineDate = rp[1].toDate(); // Get the date of the fine
             QString car = rp[2].toString();
             QString driver = rp[3].toString();
             QString time = rp[4].toTime().toString("HH:mm:ss");
-            QString fid = rp[5].toString();
+            QString fid = rp[5].toString(); // Get FID
             QString amount = rp[6].toString();
             QString isPaid = rp[7].toBool() ? "Да" : "Нет";
             QString desc = rp[8].toString();
@@ -246,20 +247,20 @@ void EditableReport::setTable()
                 continue;
             if (!driverFilter.isEmpty() && driver != driverFilter)
                 continue;
-            if (!descriptionFilter.isEmpty() && !desc.contains(descriptionFilter, Qt::CaseInsensitive))
+            if (!descriptionFilter.isEmpty() && desc.contains(descriptionFilter, Qt::CaseInsensitive))
                 continue;
 
-            // Apply date filter
+            // Apply date filter: check if fineDate is within the selected range [startDate, endDate]
             if (fineDate.isValid() && (fineDate < startDate || fineDate > endDate))
                 continue;
 
-            // Apply search bar logic
+            // Apply search bar logic: match any column including FID and Description
             if (!searchText.isEmpty() &&
-                !car.contains(searchText, Qt::CaseInsensitive) &&
-                !driver.contains(searchText, Qt::CaseInsensitive) &&
-                !amount.contains(searchText, Qt::CaseInsensitive) &&
-                !desc.contains(searchText, Qt::CaseInsensitive) &&
-                !fid.contains(searchText, Qt::CaseInsensitive))
+                !car.contains(searchText, Qt::CaseInsensitive) &&          // Машина
+                !driver.contains(searchText, Qt::CaseInsensitive) &&        // Водитель
+                !amount.contains(searchText, Qt::CaseInsensitive) &&       // Сумма
+                !desc.contains(searchText, Qt::CaseInsensitive) &&         // Описание
+                !fid.contains(searchText, Qt::CaseInsensitive))              // FID
                 continue;
 
             QList<QStandardItem *> row;
@@ -430,6 +431,27 @@ void EditableReport::on_ToPDFButton_clicked()
             break;
     }
     PDFmanager::exportToPDF(title, type, { ui->tableView->model() });
+}
+
+void EditableReport::on_resetFiltersButton_clicked()
+{
+    // Reset Date Edits to default (start of year to current date)
+    QDate currentDate = QDate::currentDate();
+    QDate startDate = QDate(currentDate.year(), 1, 1);
+    ui->startDateEdit->setDate(startDate);
+    ui->endDateEdit->setDate(currentDate);
+
+    // Reset Combo Boxes to the first item (empty string)
+    ui->carFilterComboBox->setCurrentIndex(0);
+    ui->driverFilterComboBox->setCurrentIndex(0);
+
+    // Clear Line Edits
+    ui->daysFilterLineEdit->clear();
+    ui->descriptionFilterLineEdit->clear();
+    ui->searchLineEdit->clear();
+
+    // Refresh the table
+    setTable();
 }
 
 void EditableReport::updateFilterComboBoxes()
