@@ -72,6 +72,10 @@ private:
 
     void populateComboBoxes();
     void updateFilterComboBoxes();
+
+    // Added members to track open calendar windows
+    CalendarPage *startDateCalendar = nullptr;
+    CalendarPage *endDateCalendar = nullptr;
 };
 
 #endif // EDITABLEREPORT_H

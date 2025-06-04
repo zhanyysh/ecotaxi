@@ -21,7 +21,7 @@ EditableReport::EditableReport(nm *nav, QWidget *parent)
 
     populateComboBoxes();
 
-    // Connect date button clicks to calendar slots
+    // Connect date button clicks to calendar slots (connected once in constructor)
     connect(ui->startDateButton, &QPushButton::clicked, this, &EditableReport::on_startDateButton_clicked);
     connect(ui->endDateButton, &QPushButton::clicked, this, &EditableReport::on_endDateButton_clicked);
 
@@ -67,6 +67,7 @@ void EditableReport::populateComboBoxes()
 void EditableReport::openReport(eSetting mode)
 {
     this->mode = mode;
+
     switch (this->mode) {
     case eSetting::Repairs: {
         ui->EcoTaxi->setText("РЕМОНТ");
@@ -436,6 +437,7 @@ void EditableReport::on_ToExcelButton_clicked()
     }
     ExcelManager::exportToExcel(title, type, { ui->tableView->model() });
 }
+
 void EditableReport::on_resetFiltersButton_clicked()
 {
     // Reset Date Edits to default (start of year to current date)
@@ -456,7 +458,7 @@ void EditableReport::on_resetFiltersButton_clicked()
     ui->descriptionFilterLineEdit->clear();
     ui->searchLineEdit->clear();
 
-    // Refresh the table
+    // Refresh the table (calling setTable directly)
     setTable();
 }
 
@@ -503,20 +505,41 @@ void EditableReport::updateFilterComboBoxes()
 // New slots for date selection using CalendarPage
 void EditableReport::on_startDateButton_clicked()
 {
-    CalendarPage *c = new CalendarPage(this->fromDate);
-    connect(c, &CalendarPage::changeDate, this, &EditableReport::setStartDate);
-    c->show();
+    if (!startDateCalendar) { // Only open if not already open
+        qDebug() << "Opening Start Date Calendar";
+        startDateCalendar = new CalendarPage(this->fromDate);
+        startDateCalendar->setAttribute(Qt::WA_DeleteOnClose); // Ensure deletion
+        connect(startDateCalendar, &CalendarPage::changeDate, this, &EditableReport::setStartDate);
+        connect(startDateCalendar, &CalendarPage::destroyed, this, [this](){ 
+            qDebug() << "Start Date Calendar Destroyed";
+            startDateCalendar = nullptr; 
+        }); // Reset pointer on close
+        startDateCalendar->show();
+    } else {
+        qDebug() << "Start Date Calendar already open";
+    }
 }
 
 void EditableReport::on_endDateButton_clicked()
 {
-    CalendarPage *c = new CalendarPage(this->toDate);
-    connect(c, &CalendarPage::changeDate, this, &EditableReport::setEndDate);
-    c->show();
+    if (!endDateCalendar) { // Only open if not already open
+        qDebug() << "Opening End Date Calendar";
+        endDateCalendar = new CalendarPage(this->toDate);
+        endDateCalendar->setAttribute(Qt::WA_DeleteOnClose); // Ensure deletion
+        connect(endDateCalendar, &CalendarPage::changeDate, this, &EditableReport::setEndDate);
+        connect(endDateCalendar, &CalendarPage::destroyed, this, [this](){ 
+            qDebug() << "End Date Calendar Destroyed";
+            endDateCalendar = nullptr; 
+        }); // Reset pointer on close
+        endDateCalendar->show();
+    } else {
+        qDebug() << "End Date Calendar already open";
+    }
 }
 
 void EditableReport::setStartDate(QDate date)
 {
+    qDebug() << "Setting Start Date to" << date;
     this->fromDate = date;
     ui->startDateButton->setText(date.toString("dd.MM.yyyy"));
     setTable();
@@ -525,6 +548,7 @@ void EditableReport::setStartDate(QDate date)
 
 void EditableReport::setEndDate(QDate date)
 {
+    qDebug() << "Setting End Date to" << date;
     this->toDate = date;
     ui->endDateButton->setText(date.toString("dd.MM.yyyy"));
     setTable();
