@@ -47,6 +47,7 @@ private:
     void createLoginTable();
     void createRepairsTable();
     void createFinesTable();
+    void createPaymentsTable();
 
     NoInternet *ni;
 

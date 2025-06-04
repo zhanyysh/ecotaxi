@@ -13,6 +13,7 @@
 #include "../pages/generalreport.h"
 #include "../pages/reportpage.h"
 #include "../pages/editablereport.h"
+#include "../pages/paymenthistory.h"
 
 #include "../enums/setting.h"
 #include "../enums/eSetting.h"
@@ -45,6 +46,8 @@ public:
 
     bool openFines(int index, int id = 0, QDate from = QDate(), QDate to = QDate());
 
+    bool openPaymentHistory();
+
 private:
     navigationManager(QWidget *parent = nullptr);
     ~navigationManager();
@@ -62,6 +65,8 @@ private:
     GeneralReport *GReportPage;
 
     EditableReport *EditReport;
+
+    PaymentHistory *paymentHistoryPage = nullptr;
 
 private slots:
     void reload();

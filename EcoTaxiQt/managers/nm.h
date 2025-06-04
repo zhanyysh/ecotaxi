@@ -11,6 +11,7 @@ public:
     virtual bool openReport(int index, int id = 0, QDate = QDate(), QDate = QDate()) = 0;
     virtual bool openFines(int index, int id = 0, QDate = QDate(), QDate = QDate()) = 0;
     virtual bool userOpenReport(int index, int id = 0, QDate = QDate(), QDate = QDate()) = 0;
+    virtual bool openPaymentHistory() = 0;
 };
 
 #define nm_iid "alxnko.nm"

@@ -94,6 +94,7 @@ void dbManager::createTables()
     createLoginTable();
     createRepairsTable();
     createFinesTable();
+    createPaymentsTable();
 }
 
 bool dbManager::isConnected() const
@@ -345,6 +346,20 @@ void dbManager::createFinesTable()
             amount FLOAT NOT NULL,
             isPaid BOOLEAN NOT NULL DEFAULT false,
             description TEXT
+        )
+    )Q";
+    this->executeSet(createTableQuery);
+}
+
+void dbManager::createPaymentsTable()
+{
+    QString createTableQuery = R"Q(
+        CREATE TABLE IF NOT EXISTS payments (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            investor_id INTEGER NOT NULL,
+            date DATE NOT NULL,
+            amount DOUBLE NOT NULL,
+            FOREIGN KEY (investor_id) REFERENCES investors(id)
         )
     )Q";
     this->executeSet(createTableQuery);
