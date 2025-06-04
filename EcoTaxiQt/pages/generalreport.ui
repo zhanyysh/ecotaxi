@@ -136,6 +136,9 @@
          <height>0</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black;</string>
+       </property>
        <property name="text">
         <string>01.01.0001</string>
        </property>
@@ -155,6 +158,9 @@
          <width>220</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black;</string>
        </property>
        <property name="text">
         <string>02.02.0002</string>
@@ -181,6 +187,9 @@
          <width>150</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black;</string>
        </property>
       </widget>
      </item>
@@ -214,6 +223,9 @@
          <width>150</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black;</string>
        </property>
       </widget>
      </item>

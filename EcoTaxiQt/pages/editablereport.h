@@ -8,14 +8,18 @@
 #include <QStandardItem>
 #include <QItemSelectionModel>
 #include <QLineEdit>
-#include <QComboBox> // Add this line
-#include <QStringList> // Add this line
+#include <QComboBox>
+#include <QStringList>
+#include <QPushButton>
+#include <QDate>
+
 #include "../managers/operations.h"
 #include "../managers/reportoperations.h"
 #include "../managers/pdfmanager.h"
 #include "../managers/nm.h"
 #include "customdialog.h"
 #include "addupdaterepair.h"
+#include "calendarpage.h"
 
 namespace Ui {
 class EditableReport;
@@ -48,12 +52,20 @@ private slots:
 
     void on_resetFiltersButton_clicked();
 
+    void on_startDateButton_clicked();
+    void on_endDateButton_clicked();
+    void setStartDate(QDate date);
+    void setEndDate(QDate date);
+
 private:
     Ui::EditableReport *ui;
 
     nm *nav;
 
     eSetting mode;
+
+    QDate fromDate;
+    QDate toDate;
 
     void populateComboBoxes();
     void updateFilterComboBoxes();

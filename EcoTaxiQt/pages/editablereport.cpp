@@ -13,13 +13,19 @@ EditableReport::EditableReport(nm *nav, QWidget *parent)
     QDate currentDate = QDate::currentDate();
     QDate startDate = QDate(currentDate.year(), 1, 1); // January 1st of the current year
 
-    ui->startDateEdit->setDate(startDate);
-    ui->endDateEdit->setDate(currentDate);
+    // Set initial dates and button text
+    this->fromDate = startDate;
+    this->toDate = currentDate;
+    ui->startDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+    ui->endDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
 
     populateComboBoxes();
 
-    connect(ui->startDateEdit, &QDateEdit::dateChanged, this, &EditableReport::setTable);
-    connect(ui->endDateEdit, &QDateEdit::dateChanged, this, &EditableReport::setTable);
+    // Connect date button clicks to calendar slots
+    connect(ui->startDateButton, &QPushButton::clicked, this, &EditableReport::on_startDateButton_clicked);
+    connect(ui->endDateButton, &QPushButton::clicked, this, &EditableReport::on_endDateButton_clicked);
+
+    // Connect filter combo boxes and line edits to setTable
     connect(ui->carFilterComboBox, &QComboBox::currentTextChanged, this, &EditableReport::setTable);
     connect(ui->driverFilterComboBox, &QComboBox::currentTextChanged, this, &EditableReport::setTable);
     connect(ui->descriptionFilterLineEdit, &QLineEdit::textChanged, this, &EditableReport::setTable);
@@ -64,8 +70,8 @@ void EditableReport::openReport(eSetting mode)
     switch (this->mode) {
     case eSetting::Repairs: {
         ui->EcoTaxi->setText("РЕМОНТ");
-        ui->startDateEdit->show();
-        ui->endDateEdit->show();
+        ui->startDateButton->show();
+        ui->endDateButton->show();
         ui->carFilterComboBox->show();
         ui->driverFilterComboBox->show();
         ui->daysFilterLineEdit->show();
@@ -77,26 +83,15 @@ void EditableReport::openReport(eSetting mode)
         if (QLabel *label = this->findChild<QLabel*>("label_3")) label->hide();
         if (QLabel *label = this->findChild<QLabel*>("label_days")) label->show();
 
-        // Set car/investor combos for repairs
-        ui->carFilterComboBox->blockSignals(true);
-        ui->carFilterComboBox->clear();
-        ui->carFilterComboBox->addItem("");
-        QStringList repairCars = ui->carFilterComboBox->property("repairCars").toStringList();
-        ui->carFilterComboBox->addItems(repairCars);
-        ui->carFilterComboBox->blockSignals(false);
-
-        ui->driverFilterComboBox->blockSignals(true);
-        ui->driverFilterComboBox->clear();
-        ui->driverFilterComboBox->addItem("");
-        QStringList repairInvestors = ui->driverFilterComboBox->property("repairInvestors").toStringList();
-        ui->driverFilterComboBox->addItems(repairInvestors);
-        ui->driverFilterComboBox->blockSignals(false);
+        // Populate and set car/investor combos for repairs
+        populateComboBoxes(); // Repopulate to ensure latest data
+        updateFilterComboBoxes(); // Update the UI combos
         break;
     }
     case eSetting::Fines: {
         ui->EcoTaxi->setText("ШТРАФЫ");
-        ui->startDateEdit->show();
-        ui->endDateEdit->show();
+        ui->startDateButton->show();
+        ui->endDateButton->show();
         ui->carFilterComboBox->show();
         ui->driverFilterComboBox->show();
         ui->daysFilterLineEdit->hide();
@@ -108,20 +103,9 @@ void EditableReport::openReport(eSetting mode)
         if (QLabel *label = this->findChild<QLabel*>("label_3")) label->hide();
         if (QLabel *label = this->findChild<QLabel*>("label_days")) label->hide();
 
-        // Set car/driver combos for fines
-        ui->carFilterComboBox->blockSignals(true);
-        ui->carFilterComboBox->clear();
-        ui->carFilterComboBox->addItem("");
-        QStringList finesCars = ui->carFilterComboBox->property("finesCars").toStringList();
-        ui->carFilterComboBox->addItems(finesCars);
-        ui->carFilterComboBox->blockSignals(false);
-
-        ui->driverFilterComboBox->blockSignals(true);
-        ui->driverFilterComboBox->clear();
-        ui->driverFilterComboBox->addItem("");
-        QStringList finesDrivers = ui->driverFilterComboBox->property("finesDrivers").toStringList();
-        ui->driverFilterComboBox->addItems(finesDrivers);
-        ui->driverFilterComboBox->blockSignals(false);
+        // Populate and set car/driver combos for fines
+        populateComboBoxes(); // Repopulate to ensure latest data
+        updateFilterComboBoxes(); // Update the UI combos
         break;
     }
     default:
@@ -139,8 +123,8 @@ EditableReport::~EditableReport()
 void EditableReport::setTable()
 {
     QStandardItemModel *model = new QStandardItemModel();
-    QDate startDate = ui->startDateEdit->date();
-    QDate endDate = ui->endDateEdit->date();
+    QDate startDate = this->fromDate;
+    QDate endDate = this->toDate;
 
     switch (this->mode) {
     case eSetting::Repairs: {
@@ -438,8 +422,11 @@ void EditableReport::on_resetFiltersButton_clicked()
     // Reset Date Edits to default (start of year to current date)
     QDate currentDate = QDate::currentDate();
     QDate startDate = QDate(currentDate.year(), 1, 1);
-    ui->startDateEdit->setDate(startDate);
-    ui->endDateEdit->setDate(currentDate);
+
+    this->fromDate = startDate;
+    this->toDate = currentDate;
+    ui->startDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+    ui->endDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
 
     // Reset Combo Boxes to the first item (empty string)
     ui->carFilterComboBox->setCurrentIndex(0);
@@ -492,4 +479,35 @@ void EditableReport::updateFilterComboBoxes()
     default:
         break;
     }
+}
+
+// New slots for date selection using CalendarPage
+void EditableReport::on_startDateButton_clicked()
+{
+    CalendarPage *c = new CalendarPage(this->fromDate);
+    connect(c, &CalendarPage::changeDate, this, &EditableReport::setStartDate);
+    c->show();
+}
+
+void EditableReport::on_endDateButton_clicked()
+{
+    CalendarPage *c = new CalendarPage(this->toDate);
+    connect(c, &CalendarPage::changeDate, this, &EditableReport::setEndDate);
+    c->show();
+}
+
+void EditableReport::setStartDate(QDate date)
+{
+    this->fromDate = date;
+    ui->startDateButton->setText(date.toString("dd.MM.yyyy"));
+    setTable();
+    setTableSize();
+}
+
+void EditableReport::setEndDate(QDate date)
+{
+    this->toDate = date;
+    ui->endDateButton->setText(date.toString("dd.MM.yyyy"));
+    setTable();
+    setTableSize();
 }
