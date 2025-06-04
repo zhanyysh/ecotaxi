@@ -661,20 +661,20 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
 
     QString query =
         "SELECT\n"
-        "   cars.id,\n"
-        "   cars.sid,\n"
+        "   events.id,\n"
+        "   cars.licensePlate,\n"
         "   investors.name AS investorName,\n"
-        "   COUNT(events.id) AS rentCount,\n"
-        "   SUM(COALESCE(events.dolg, 0)) AS debtAmount\n"
-        "FROM cars\n"
-        "LEFT JOIN events ON events.carId = cars.id\n"
+        "   drivers.name AS driverName,\n"
+        "   events.dolg AS debtAmount\n"
+        "FROM events\n"
+        "LEFT JOIN cars ON events.carId = cars.id\n"
         "LEFT JOIN types ON events.typeId = types.id\n"
         "LEFT JOIN investors ON investors.id = cars.investorId\n"
+        "LEFT JOIN drivers ON events.driverId = drivers.id\n"
         "WHERE types.name = 'Аренда'\n"
         "AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "GROUP BY cars.id, cars.sid, investors.name\n"
-        "ORDER BY debtAmount DESC";
+        "ORDER BY events.date DESC";
 
     result = db.executeGet(query);
     return result;

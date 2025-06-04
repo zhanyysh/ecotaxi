@@ -249,7 +249,7 @@ void EditableReport::setTable()
 
             QList<QStandardItem *> row;
             row << new QStandardItem(rp[0].toString());
-            row << new QStandardItem(fineDate.toString("dd.MM.yyyy"));
+            row << new QStandardItem(fineDate.toString("yyyy-MM-dd"));
             row << new QStandardItem(time);
             row << new QStandardItem(fid);
             row << new QStandardItem(car);
@@ -417,6 +417,25 @@ void EditableReport::on_ToPDFButton_clicked()
     PDFmanager::exportToPDF(title, type, { ui->tableView->model() });
 }
 
+void EditableReport::on_ToExcelButton_clicked()
+{
+    QString title;
+    QString type;
+    switch (this->mode)
+    {
+        case eSetting::Repairs:
+            title = "Ремонты";
+            type = ui->checkBox->isChecked() ? "Не завершенные" : "Все";
+            break;
+        case eSetting::Fines:
+            title = "Штрафы";
+            type = ui->checkBox->isChecked() ? "Не оплаченные" : "Все";
+            break;
+        default:
+            break;
+    }
+    ExcelManager::exportToExcel(title, type, { ui->tableView->model() });
+  
 void EditableReport::on_resetFiltersButton_clicked()
 {
     // Reset Date Edits to default (start of year to current date)

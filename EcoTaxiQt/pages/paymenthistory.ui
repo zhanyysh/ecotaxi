@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PaymentHistory</class>
+ <widget class="QWidget" name="PaymentHistory">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Выплаты</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" >
+   <item>
+    <layout class="QHBoxLayout" name="headerLayout">
+     <item>
+      <widget class="QPushButton" name="BackButton">
+       <property name="text">
+        <string>НАЗАД</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>52</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>250</width>
+         <height>52</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { border-radius: 26px; background-color: #007700; color: white; font-size: 28px; font-weight: bold; } QPushButton:hover { background-color: #005500; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacerLeft">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="Header">
+       <property name="text">
+        <string>ВЫПЛАТЫ</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>96</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string>QLabel { color: #007700; font-weight: bold; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacerRight">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="SettingsButton">
+       <property name="text">
+        <string>НАСТРОЙКИ</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>52</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>250</width>
+         <height>52</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { border-radius: 26px; background-color: #007700; color: white; font-size: 28px; font-weight: bold; } QPushButton:hover { background-color: #005500; }</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="addButtonLayout">
+     <item>
+      <spacer name="addLeft">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="AddPaymentButton">
+       <property name="text">
+        <string>ДОБАВИТЬ</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>52</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>400</width>
+         <height>52</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { border-radius: 26px; background-color: #007700; color: white; font-size: 28px; font-weight: bold; } QPushButton:hover { background-color: #005500; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="addRight">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTableView" name="tableView">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui> 

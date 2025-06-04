@@ -120,6 +120,11 @@
             <string>ДОЛГИ</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>ИСТОРИЯ ВЫПЛАТ</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">

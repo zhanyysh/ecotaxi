@@ -10,16 +10,18 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QStringList>
-#include <QPushButton>
-#include <QDate>
 
 #include "../managers/operations.h"
 #include "../managers/reportoperations.h"
 #include "../managers/pdfmanager.h"
+#include "../managers/excelmanager.h"
 #include "../managers/nm.h"
 #include "customdialog.h"
 #include "addupdaterepair.h"
 #include "calendarpage.h"
+
+#include <QPushButton>
+#include <QDate>
 
 namespace Ui {
 class EditableReport;
@@ -44,6 +46,7 @@ private slots:
     void on_EditButton_clicked();
     void on_DeleteButton_clicked();
     void on_ToPDFButton_clicked();
+    void on_ToExcelButton_clicked();
 
     void on_checkBox_checkStateChanged(Qt::CheckState state);
 

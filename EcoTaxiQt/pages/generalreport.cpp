@@ -1,5 +1,6 @@
 #include "generalreport.h"
 #include "pages/ui_generalreport.h"
+#include "../managers/excelmanager.h"
 
 GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     : QWidget(parent), ui(new Ui::GeneralReport)
@@ -398,23 +399,20 @@ void GeneralReport::setTable()
         break;
 
     case Report::Debts:
-        model->setHorizontalHeaderLabels({"id", "Машина", "Инвестор", "Количество", "Сумма"});
+        model->setHorizontalHeaderLabels({"id", "Водитель", "Машина", "Инвестор", "Долг"});
         for (const QVariant &debt : ReportOperations::getDebtsReport(this->fromDate, this->toDate))
         {
             QVariantList debts = debt.toList();
             QList<QStandardItem *> row;
 
             row.append(new QStandardItem(debts[0].toString()));  // id
-            row.append(new QStandardItem(debts[1].toString()));  // carId
-            row.append(new QStandardItem(debts[2].toString()));  // investor
+            row.append(new QStandardItem(debts[3].toString()));  // driverName
+            row.append(new QStandardItem(debts[1].toString()));  // licensePlate
+            row.append(new QStandardItem(debts[2].toString()));  // investorName
             
-            QStandardItem *rentCountItem = new QStandardItem();
-            rentCountItem->setData(debts[3].toInt(), Qt::DisplayRole);
-            row.append(rentCountItem); // rentCount
-
-            QStandardItem *dentAmountItem = new QStandardItem();
-            dentAmountItem->setData(debts[4].toInt(), Qt::DisplayRole);
-            row.append(dentAmountItem); // dentAmount
+            QStandardItem *debtAmountItem = new QStandardItem();
+            debtAmountItem->setData(debts[4].toInt(), Qt::DisplayRole);
+            row.append(debtAmountItem); // debtAmount
 
             model->appendRow(row);
         }
@@ -843,10 +841,10 @@ void GeneralReport::setTableSizes()
 
     case Report::Types:
     case Report::Debts:
-        ui->tableView->setColumnWidth(1, 226);
-        ui->tableView->setColumnWidth(2, 226);
-        ui->tableView->setColumnWidth(3, 226);
-        ui->tableView->setColumnWidth(4, 226);
+        ui->tableView->setColumnWidth(1, 200);  // Водитель
+        ui->tableView->setColumnWidth(2, 150);  // Машина
+        ui->tableView->setColumnWidth(3, 200);  // Инвестор
+        ui->tableView->setColumnWidth(4, 150);  // Долг
         break;
 
     case Report::Drivers:
@@ -1142,6 +1140,50 @@ void GeneralReport::on_ToPDFButton_clicked()
         break;
     }
     PDFmanager::exportToPDF(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() });
+}
+
+void GeneralReport::on_ToExcelButton_clicked()
+{
+    QString title;
+    switch (this->mode)
+    {
+    case Report::Cars:
+        title = "Отчет по машинам";
+        break;
+    case Report::Drivers:
+        title = "Отчет по водителям";
+        break;
+    case Report::Investors:
+        title = "Отчет по инвесторам";
+        break;
+    case Report::Types:
+        title = "Отчет по типам";
+        break;
+    case Report::Locations:
+        title = "Отчет по локациям";
+        break;
+    case Report::Charges:
+        title = "Отчет по зарядкам";
+        break;
+    case Report::Users:
+        title = "Отчет по пользователям";
+        break;
+    case Report::Users2:
+        title = "Отчет по количеству действий";
+        break;
+    case Report::Debts:
+        title = "Отчет по долгам";
+        break;
+    case Report::FinesByDrivers:
+        title = "Отчет по штрафам по водителям";
+        break;
+    case Report::FinesByCars:
+        title = "Отчет по штрафам по машинам";
+        break;
+    default:
+        break;
+    }
+    ExcelManager::exportToExcel(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() });
 }
 
 void GeneralReport::onSectionResized(int logicalIndex, int oldSize, int newSize)
