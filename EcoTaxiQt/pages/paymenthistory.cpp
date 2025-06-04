@@ -10,8 +10,9 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QDateEdit>
-#include <QDoubleSpinBox>
+#include <QDoubleValidator>
 #include <QPushButton>
+#include <QLineEdit>
 
 PaymentHistory::PaymentHistory(QWidget *parent) :
     QWidget(parent),
@@ -63,29 +64,38 @@ void PaymentHistory::on_AddPaymentButton_clicked()
 {
     QDialog *dialog = new QDialog(this);
     dialog->setWindowTitle("Добавить выплату");
+    dialog->setFixedSize(400, 320);
     
     QVBoxLayout *layout = new QVBoxLayout(dialog);
     
-    // Создаем виджеты для формы
+    // Инвестор
     QHBoxLayout *investorLayout = new QHBoxLayout();
-    QLabel *investorLabel = new QLabel("Инвестор:", dialog);
+    QLabel *investorLabel = new QLabel("<b><span style='color:#007700; font-size:22px;'>Инвестор:</span></b>", dialog);
     QComboBox *investorComboBox = new QComboBox(dialog);
+    investorComboBox->setMinimumWidth(120);
+    investorComboBox->setStyleSheet("font-size: 22px; font-weight: bold;");
     investorLayout->addWidget(investorLabel);
     investorLayout->addWidget(investorComboBox);
     
+    // Дата
     QHBoxLayout *dateLayout = new QHBoxLayout();
-    QLabel *dateLabel = new QLabel("Дата:", dialog);
+    QLabel *dateLabel = new QLabel("<b><span style='color:#007700; font-size:22px;'>Дата:</span></b>", dialog);
     QDateEdit *dateEdit = new QDateEdit(dialog);
     dateEdit->setDate(QDate::currentDate());
+    dateEdit->setStyleSheet("font-size: 22px; font-weight: bold;");
     dateLayout->addWidget(dateLabel);
     dateLayout->addWidget(dateEdit);
     
+    // Сумма
     QHBoxLayout *amountLayout = new QHBoxLayout();
-    QLabel *amountLabel = new QLabel("Сумма:", dialog);
-    QDoubleSpinBox *amountSpinBox = new QDoubleSpinBox(dialog);
-    amountSpinBox->setMaximum(1000000);
+    QLabel *amountLabel = new QLabel("<b><span style='color:#007700; font-size:22px;'>Сумма:</span></b>", dialog);
+    QLineEdit *amountEdit = new QLineEdit(dialog);
+    amountEdit->setPlaceholderText("Введите сумму");
+    amountEdit->setValidator(new QDoubleValidator(0, 1000000, 2, amountEdit));
+    amountEdit->setMinimumWidth(120);
+    amountEdit->setStyleSheet("font-size: 22px; font-weight: bold;");
     amountLayout->addWidget(amountLabel);
-    amountLayout->addWidget(amountSpinBox);
+    amountLayout->addWidget(amountEdit);
     
     // Загружаем список инвесторов
     QSqlQuery query;
@@ -96,27 +106,33 @@ void PaymentHistory::on_AddPaymentButton_clicked()
         }
     }
     
-    // Добавляем кнопки
+    // Кнопки
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     QPushButton *okButton = new QPushButton("OK", dialog);
     QPushButton *cancelButton = new QPushButton("Отмена", dialog);
+    okButton->setStyleSheet("QPushButton { background-color: #007700; color: white; font-size: 28px; font-weight: bold; border-radius: 10px; padding: 10px 30px; } QPushButton:hover { background-color: #005500; }");
+    cancelButton->setStyleSheet("QPushButton { background-color: #007700; color: white; font-size: 28px; font-weight: bold; border-radius: 10px; padding: 10px 30px; } QPushButton:hover { background-color: #005500; }");
     buttonLayout->addWidget(okButton);
     buttonLayout->addWidget(cancelButton);
     
-    // Добавляем все в основной layout
+    // Добавляем всё в layout
     layout->addLayout(investorLayout);
     layout->addLayout(dateLayout);
     layout->addLayout(amountLayout);
     layout->addLayout(buttonLayout);
     
-    // Подключаем сигналы
+    // Сигналы
     connect(okButton, &QPushButton::clicked, [=]() {
         QString investorName = investorComboBox->currentText();
         QDate date = dateEdit->date();
-        double amount = amountSpinBox->value();
+        double amount = amountEdit->text().replace(",", ".").toDouble();
         
         if (investorName.isEmpty()) {
             QMessageBox::warning(dialog, "Ошибка", "Выберите инвестора");
+            return;
+        }
+        if (amount <= 0) {
+            QMessageBox::warning(dialog, "Ошибка", "Введите корректную сумму");
             return;
         }
         
@@ -130,7 +146,6 @@ void PaymentHistory::on_AddPaymentButton_clicked()
         if (query.exec()) {
             loadPayments();
             dialog->accept();
-            QMessageBox::information(this, "Успех", "Выплата успешно добавлена");
         } else {
             QMessageBox::critical(dialog, "Ошибка", "Не удалось добавить выплату: " + query.lastError().text());
         }
