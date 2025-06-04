@@ -6,11 +6,53 @@
     <title>{% block title %}EcoTaxi Investor Portal{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body {
+            background: #f8f9fa;
+        }
+        .navbar, .bg-dark {
+            background-color: #007700 !important;
+        }
+        .navbar .navbar-brand, .navbar .nav-link, .navbar .nav-link:visited {
+            color: #fff !important;
+            font-weight: bold;
+        }
+        .navbar .nav-link.active, .navbar .nav-link:hover {
+            color: #caffca !important;
+        }
+        h1, h2, h3, h4, h5, h6, .text-success, .btn-success, .btn-green {
+            color: #007700 !important;
+        }
+        .btn-primary, .btn-green {
+            background-color: #007700 !important;
+            border-color: #007700 !important;
+            color: #fff !important;
+            font-weight: bold;
+        }
+        .btn-primary:hover, .btn-green:hover {
+            background-color: #005500 !important;
+            border-color: #005500 !important;
+        }
+        .card-header, .table th {
+            background-color: #007700;
+            color: #fff !important;
+            font-weight: bold;
+        }
+        .form-label {
+            color: #007700;
+            font-weight: bold;
+        }
+        .btn-secondary {
+            background-color: #ccc;
+            color: #333;
+        }
         .navbar {
             margin-bottom: 20px;
         }
         .content {
             padding: 20px;
+        }
+        .card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6 {
+            color: #fff !important;
         }
     </style>
 </head>
