@@ -437,7 +437,7 @@ void EditableReport::on_ToExcelButton_clicked()
     }
     ExcelManager::exportToExcel(title, type, { ui->tableView->model() });
 }
-  
+
 void EditableReport::on_resetFiltersButton_clicked()
 {
     // Reset Date Edits to default (start of year to current date)
