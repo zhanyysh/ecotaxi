@@ -25,6 +25,17 @@
                         <td>{{ car.year }}</td>
                     </tr>
                 </table>
+                <h4>Отчет по машине</h4>
+                <table class="table">
+                    <tr><th>Доход</th><td>{{ report.income }}</td></tr>
+                    <tr><th>Налог 5%</th><td>{{ report.tax }}</td></tr>
+                    <tr><th>KWH * 10</th><td>{{ report.kwh }}</td></tr>
+                    <tr><th>Расход</th><td>{{ report.outcome }}</td></tr>
+                    <tr><th>Общий</th><td>{{ report.total }}</td></tr>
+                    <tr><th>%</th><td>{{ report.percent }}</td></tr>
+                    <tr><th>Комиссия</th><td>{{ report.commission }}</td></tr>
+                    <tr><th>Инвестору</th><td>{{ report.to_investor }}</td></tr>
+                </table>
             </div>
             <div class="col-md-6">
                 <h5>Техническая информация</h5>

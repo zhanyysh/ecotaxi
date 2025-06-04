@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import mysql.connector
-from datetime import datetime
+from datetime import datetime, date
 import hmac
 import hashlib
+from math import floor
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'  # Измените на реальный секретный ключ
@@ -105,7 +106,7 @@ def dashboard():
 def car_details(car_id):
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor(dictionary=True)
-    # Проверяем, принадлежит ли машина текущему инвестору
+    # Получаем машину
     cursor.execute('SELECT * FROM cars WHERE id = %s AND investorId = %s', (car_id, current_user.id))
     car = cursor.fetchone()
     if not car:
@@ -113,9 +114,52 @@ def car_details(car_id):
         cursor.close()
         conn.close()
         return redirect(url_for('dashboard'))
+    # Период отчета (за все время)
+    start_date = '2000-01-01'
+    end_date = date.today().strftime('%Y-%m-%d')
+    # Доход (totalIncome)
+    cursor.execute('SELECT COALESCE(SUM(amount),0) as income FROM events WHERE carId = %s AND amount > 0', (car_id,))
+    income = cursor.fetchone()['income'] or 0
+    # Налог 5% (totalIncomeTax)
+    tax = income * 0.05
+    # Расход (totalOutcome)
+    cursor.execute('SELECT COALESCE(SUM(amount),0) as outcome FROM events WHERE carId = %s AND amount < 0', (car_id,))
+    outcome = cursor.fetchone()['outcome'] or 0
+    # KWH x 10 (totalKwh)
+    cursor.execute('SELECT COALESCE(SUM(kwh),0) as kwh FROM charges WHERE carId = %s', (car_id,))
+    kwh = (cursor.fetchone()['kwh'] or 0) * 10
+    # totalEventProfit = Доход * 0.95
+    total_event_profit = income * 0.95
+    # Общий (totalAmount)
+    total_amount = floor(total_event_profit - kwh + outcome)
+    # % (процент)
+    percent = car['percentage']
+    # Комиссия (ourProfit)
+    if total_amount < 0:
+        commission = 0
+    else:
+        commission = floor(total_amount * percent / 100)
+    # Инвестору (investorsProfit)
+    if total_amount < 0:
+        to_investor = total_amount
+    else:
+        to_investor = floor(total_amount * (100 - percent) / 100)
     cursor.close()
     conn.close()
-    return render_template('car_details.html', car=car)
+    return render_template(
+        'car_details.html',
+        car=car,
+        report={
+            'income': income,
+            'tax': tax,
+            'kwh': kwh,
+            'outcome': outcome,
+            'total': total_amount,
+            'percent': percent,
+            'commission': commission,
+            'to_investor': to_investor
+        }
+    )
 
 @app.route('/payments')
 @login_required
