@@ -3,40 +3,80 @@
 {% block title %}Мои машины - EcoTaxi Investor Portal{% endblock %}
 
 {% block content %}
-<h2>Мои машины</h2>
 
+<h3 class="mt-5">Отчет по всем вашим машинам</h3>
 <div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead>
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-auto">
+            <label for="start_date" class="col-form-label">От:</label>
+        </div>
+        <div class="col-auto">
+            <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+        </div>
+        <div class="col-auto">
+            <label for="end_date" class="col-form-label">До:</label>
+        </div>
+        <div class="col-auto">
+            <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary ms-2">Фильтр</button>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary ms-2">Отменить фильтр</a>
+        </div>
+    </form>
+    <table class="table table-bordered table-striped">
+        <thead class="table-success">
             <tr>
-                <th>Модель</th>
-                <th>Гос. номер</th>
-                <th>Год выпуска</th>
-                <th>Процент</th>
+                <th>ID</th>
+                <th>Доход</th>
+                <th>Налог 5%</th>
+                <th>KWH * 10</th>
+                <th>Расход</th>
+                <th>Общий</th>
+                <th>%</th>
+                <th>Комиссия</th>
+                <th>Инвестору</th>
                 <th>Действия</th>
             </tr>
         </thead>
         <tbody>
-            {% for car in cars %}
+            {% for car in cars_report %}
             <tr>
-                <td>{{ car.model }}</td>
-                <td>{{ car.licensePlate }}</td>
-                <td>{{ car.year }}</td>
-                <td>{{ car.percentage }}%</td>
+                <td>{{ car.car_sid }}</td>
+                <td>{{ car.income }}</td>
+                <td>{{ car.tax }}</td>
+                <td>{{ car.kwh }}</td>
+                <td>{{ car.outcome }}</td>
+                <td>{{ car.total }}</td>
+                <td>{{ car.percent }}</td>
+                <td>{{ car.commission }}</td>
+                <td>{{ car.to_investor }}</td>
                 <td>
-                    <a href="{{ url_for('car_details', car_id=car.id) }}" class="btn btn-primary btn-sm">Подробнее</a>
+                    <a href="{{ url_for('car_details', car_id=car.car_id) }}" class="btn btn-primary btn-sm">Подробнее</a>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="text-center">
-                    <div class="alert alert-info mb-0">
-                        У вас пока нет машин в системе.
-                    </div>
-                </td>
+                <td colspan="10" class="text-center">Нет данных для отчета.</td>
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr class="table-secondary fw-bold">
+                <td>Итого</td>
+                <td>{{ cars_report_total.income }}</td>
+                <td>{{ cars_report_total.tax }}</td>
+                <td>{{ cars_report_total.kwh }}</td>
+                <td>{{ cars_report_total.outcome }}</td>
+                <td>{{ cars_report_total.total }}</td>
+                <td>{{ cars_report_total.count }}</td>
+                <td>{{ cars_report_total.commission }}</td>
+                <td>{{ cars_report_total.to_investor }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
     </table>
 </div>
 {% endblock %} 
