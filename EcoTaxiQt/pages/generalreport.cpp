@@ -947,7 +947,7 @@ void GeneralReport::on_SettingsButton_clicked()
 
 void GeneralReport::on_BackButton_clicked()
 {
-    nav->changeWindow(0);
+    nav->goBack();
 }
 
 void GeneralReport::on_ReportButton_clicked()

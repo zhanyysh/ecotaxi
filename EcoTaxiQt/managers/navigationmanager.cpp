@@ -8,7 +8,7 @@ navigationManager &navigationManager::getInstance()
 }
 
 navigationManager::navigationManager(QWidget *parent)
-    : QWidget(parent), nm(), ui(new Ui::navigationManager)
+    : QWidget(parent), nm(), ui(new Ui::navigationManager), isGoingBack(false)
 {
     dbManager &db = dbManager::getInstance();
 
@@ -48,6 +48,12 @@ navigationManager::~navigationManager()
 
 void navigationManager::changeWindow(int id)
 {
+    // Сохраняем текущий индекс в историю только если это не возврат назад
+    if (!isGoingBack && ui->pages->currentIndex() != id) {
+        navigationHistory.push(ui->pages->currentIndex());
+    }
+    isGoingBack = false; // Сбрасываем флаг после использования
+
     if (id == 0)
     {
         lastFunc = [this]() { this->MainPage->openWidnow(); };
@@ -58,6 +64,18 @@ void navigationManager::changeWindow(int id)
     }
     lastFunc();
     ui->pages->setCurrentIndex(id);
+}
+
+void navigationManager::goBack()
+{
+    if (!navigationHistory.isEmpty()) {
+        isGoingBack = true; // Устанавливаем флаг перед возвратом назад
+        int previousIndex = navigationHistory.pop();
+        changeWindow(previousIndex);
+    } else {
+        // Если история пуста, возвращаемся на главную
+        changeWindow(0);
+    }
 }
 
 bool navigationManager::openSettings(int id)

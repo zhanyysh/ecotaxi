@@ -832,7 +832,7 @@ void ReportPage::on_SettingsButton_clicked()
 
 void ReportPage::on_BackButton_clicked()
 {
-    nav->changeWindow(0);
+    nav->goBack();
 }
 
 void ReportPage::on_ReportButton_clicked()

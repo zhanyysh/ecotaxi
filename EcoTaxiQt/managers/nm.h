@@ -6,6 +6,7 @@
 class nm {
 public:
     virtual void changeWindow(int id) = 0;
+    virtual void goBack() = 0;
     virtual bool openSettings(int id) = 0;
     virtual bool openEvents(int id, QDate = QDate()) = 0;
     virtual bool openReport(int index, int id = 0, QDate = QDate(), QDate = QDate()) = 0;
