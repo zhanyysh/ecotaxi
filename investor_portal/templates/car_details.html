@@ -30,46 +30,87 @@
 
         <div class="row">
             <div class="col-12">
-                <h4>Финансовый отчет</h4>
+                <h4>События по машине</h4>
+                <form method="get" class="row g-3 mb-3">
+                    <div class="col-auto">
+                        <label for="start_date" class="col-form-label">От:</label>
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                    </div>
+                    <div class="col-auto">
+                        <label for="end_date" class="col-form-label">До:</label>
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary ms-2">Фильтр</button>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ url_for('car_details', car_id=car.id) }}" class="btn btn-primary ms-2">Отменить фильтр</a>
+                    </div>
+                </form>
                 <table class="table table-bordered">
-                    <thead class="table-light">
+                    <thead class="table-success">
                         <tr>
-                            <th>Показатель</th>
-                            <th>Значение</th>
+                            <th>Дата</th>
+                            <th>Тип</th>
+                            <th>Водитель</th>
+                            <th>Сумма</th>
+                            <th>Описание</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for event in events %}
                         <tr>
-                            <td>Доход</td>
-                            <td>{{ report.income }}</td>
+                            <td>{{ event.date.strftime('%d.%m.%Y %H:%M') if event.date else '' }}</td>
+                            <td>{{ event.type or '-' }}</td>
+                            <td>{{ event.driver or '-' }}</td>
+                            <td>{{ event.amount }}</td>
+                            <td>{{ event.description or '' }}</td>
                         </tr>
+                        {% else %}
                         <tr>
-                            <td>Налог 5%</td>
-                            <td>{{ report.tax }}</td>
+                            <td colspan="5" class="text-center">Нет данных по событиям для этой машины.</td>
                         </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-secondary fw-bold">
+                            <td colspan="3">Итого событий: {{ events_total.count }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5>Итоговые данные по машине</h5>
+                <table class="table table-bordered table-sm mb-0">
+                    <thead class="table-success">
                         <tr>
-                            <td>KWH * 10</td>
-                            <td>{{ report.kwh }}</td>
+                            <th>Доход</th>
+                            <th>Налог 5%</th>
+                            <th>KWH * 10</th>
+                            <th>Расход</th>
+                            <th>Общая</th>
+                            <th>%</th>
+                            <th>Комиссия</th>
+                            <th>Инвестору</th>
                         </tr>
-                        <tr>
-                            <td>Расход</td>
-                            <td>{{ report.outcome }}</td>
-                        </tr>
-                        <tr class="table-primary">
-                            <td><strong>Общий</strong></td>
-                            <td><strong>{{ report.total }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Процент</td>
-                            <td>{{ report.percent }}%</td>
-                        </tr>
-                        <tr>
-                            <td>Комиссия</td>
-                            <td>{{ report.commission }}</td>
-                        </tr>
-                        <tr class="table-success">
-                            <td><strong>Инвестору</strong></td>
-                            <td><strong>{{ report.to_investor }}</strong></td>
+                    </thead>
+                    <tbody>
+                        <tr class="table-secondary fw-bold">
+                            <td>{{ events_total.income }}</td>
+                            <td>{{ events_total.tax }}</td>
+                            <td>{{ events_total.kwh }}</td>
+                            <td>{{ events_total.outcome }}</td>
+                            <td>{{ events_total.total }}</td>
+                            <td>{{ events_total.percent }}%</td>
+                            <td>{{ events_total.commission }}</td>
+                            <td>{{ events_total.to_investor }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -78,7 +119,6 @@
     </div>
     <div class="card-footer">
         <a href="{{ url_for('dashboard') }}" class="btn btn-primary ms-2">Назад к списку</a>
-        <a href="{{ url_for('car_report', car_id=car.id) }}" class="btn btn-primary ms-2">Отчет этой машины</a>
     </div>
 </div>
 {% endblock %} 
