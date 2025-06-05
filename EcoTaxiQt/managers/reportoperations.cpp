@@ -672,6 +672,8 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "LEFT JOIN investors ON investors.id = cars.investorId\n"
         "LEFT JOIN drivers ON events.driverId = drivers.id\n"
         "WHERE types.name = 'Аренда'\n"
+        "AND events.dolg > 0\n"
+        "AND events.description NOT LIKE 'долг оплачен%'\n"
         "AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
         "ORDER BY events.date DESC";

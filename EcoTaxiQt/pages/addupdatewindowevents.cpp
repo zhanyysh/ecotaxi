@@ -221,6 +221,22 @@ void addupdatewindowEvents::resetInputColor() {
 }
 
 void addupdatewindowEvents::on_paidButton_clicked() {
+    // Create new event with payment description
+    QString paymentDesc = QString("долг оплачен %1").arg(ui->DateTimeEdit->dateTime().toString("dd.MM.yyyy"));
+    float currentDolg = ui->DolgEdit->text().toFloat();
+    
+    Operations::addEvent(Event(QVariantList::fromList({
+        0,
+        carsId.value(ui->CarIdBox->currentText()),
+        driversId.value(ui->DriverIdBox->currentText()),
+        types.value(ui->TypeBox->currentText()),
+        currentDolg, // Set debt amount equal to current event's debt
+        ui->AmountEdit->text().toFloat(),
+        paymentDesc,
+        ui->DateTimeEdit->dateTime()
+    })));
+
+    // Clear debt in current event
     ui->DolgEdit->setText("0");
 }
 
