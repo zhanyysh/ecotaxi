@@ -230,8 +230,8 @@ void addupdatewindowEvents::on_paidButton_clicked() {
         carsId.value(ui->CarIdBox->currentText()),
         driversId.value(ui->DriverIdBox->currentText()),
         types.value(ui->TypeBox->currentText()),
-        currentDolg, // Set debt amount equal to current event's debt
-        ui->AmountEdit->text().toFloat(),
+        0, // Set debt to 0 since it's a payment
+        currentDolg, // Set amount equal to the debt being paid
         paymentDesc,
         ui->DateTimeEdit->dateTime()
     })));
