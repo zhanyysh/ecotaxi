@@ -179,5 +179,32 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route('/car/<int:car_id>/report')
+@login_required
+def car_report(car_id):
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=True)
+    # Проверяем, принадлежит ли машина инвестору
+    cursor.execute('SELECT * FROM cars WHERE id = %s AND investorId = %s', (car_id, current_user.id))
+    car = cursor.fetchone()
+    if not car:
+        flash('Машина не найдена')
+        cursor.close()
+        conn.close()
+        return redirect(url_for('dashboard'))
+    # Получаем события по машине
+    cursor.execute('''
+        SELECT events.date, types.name AS type, drivers.name AS driver, events.amount, events.description
+        FROM events
+        LEFT JOIN types ON events.typeId = types.id
+        LEFT JOIN drivers ON events.driverId = drivers.id
+        WHERE events.carId = %s
+        ORDER BY events.date DESC
+    ''', (car_id,))
+    events = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('car_report.html', car=car, events=events)
+
 if __name__ == '__main__':
     app.run(debug=True) 
