@@ -213,7 +213,7 @@ void eventPage::setBottomTable() {
 
 void eventPage::on_BackButton_clicked()
 {
-    nav->changeWindow(0);
+    nav->goBack();
 }
 
 void eventPage::on_DeleteButton_clicked()

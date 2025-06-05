@@ -197,7 +197,7 @@ bool SettingsPage::setTable()
 
 void SettingsPage::on_BackButton_clicked()
 {
-    nav->changeWindow(0);
+    nav->goBack();
 }
 
 void SettingsPage::on_AddButton_clicked()

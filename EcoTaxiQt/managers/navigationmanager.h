@@ -2,7 +2,7 @@
 #define NAVIGATIONMANAGER_H
 
 #include <functional>
-
+#include <QStack>
 #include <QWidget>
 
 #include "nm.h"
@@ -35,6 +35,7 @@ public:
     static navigationManager &getInstance();
 
     void changeWindow(int id);
+    void goBack();
 
     bool openSettings(int id);
 
@@ -55,6 +56,8 @@ private:
     Ui::navigationManager *ui;
 
     std::function<void()> lastFunc;
+    QStack<int> navigationHistory;
+    bool isGoingBack;
 
     MainWindow *MainPage;
 
