@@ -8,56 +8,77 @@
         <h2>Информация о машине</h2>
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <h5>Основная информация</h5>
-                <table class="table">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4>Основная информация</h4>
+                <table class="table table-bordered">
                     <tr>
-                        <th>Модель:</th>
+                        <th style="width: 200px;">Модель</th>
                         <td>{{ car.model }}</td>
-                    </tr>
-                    <tr>
-                        <th>Гос. номер:</th>
+                        <th style="width: 200px;">Гос. номер</th>
                         <td>{{ car.licensePlate }}</td>
                     </tr>
                     <tr>
-                        <th>Год выпуска:</th>
+                        <th>Год выпуска</th>
                         <td>{{ car.year }}</td>
-                    </tr>
-                </table>
-                <h4>Отчет по машине</h4>
-                <table class="table">
-                    <tr><th>Доход</th><td>{{ report.income }}</td></tr>
-                    <tr><th>Налог 5%</th><td>{{ report.tax }}</td></tr>
-                    <tr><th>KWH * 10</th><td>{{ report.kwh }}</td></tr>
-                    <tr><th>Расход</th><td>{{ report.outcome }}</td></tr>
-                    <tr><th>Общий</th><td>{{ report.total }}</td></tr>
-                    <tr><th>%</th><td>{{ report.percent }}</td></tr>
-                    <tr><th>Комиссия</th><td>{{ report.commission }}</td></tr>
-                    <tr><th>Инвестору</th><td>{{ report.to_investor }}</td></tr>
-                </table>
-            </div>
-            <div class="col-md-6">
-                <h5>Техническая информация</h5>
-                <table class="table">
-                    <tr>
-                        <th>Пробег:</th>
+                        <th>Пробег</th>
                         <td>{{ car.mileage }} км</td>
                     </tr>
-                    <tr>
-                        <th>Последнее ТО:</th>
-                        <td>{{ car.last_maintenance }}</td>
-                    </tr>
-                    <tr>
-                        <th>Следующее ТО:</th>
-                        <td>{{ car.next_maintenance }}</td>
-                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <h4>Финансовый отчет</h4>
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Показатель</th>
+                            <th>Значение</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Доход</td>
+                            <td>{{ report.income }}</td>
+                        </tr>
+                        <tr>
+                            <td>Налог 5%</td>
+                            <td>{{ report.tax }}</td>
+                        </tr>
+                        <tr>
+                            <td>KWH * 10</td>
+                            <td>{{ report.kwh }}</td>
+                        </tr>
+                        <tr>
+                            <td>Расход</td>
+                            <td>{{ report.outcome }}</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td><strong>Общий</strong></td>
+                            <td><strong>{{ report.total }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Процент</td>
+                            <td>{{ report.percent }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Комиссия</td>
+                            <td>{{ report.commission }}</td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>Инвестору</strong></td>
+                            <td><strong>{{ report.to_investor }}</strong></td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
     <div class="card-footer">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Назад к списку</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary ms-2">Назад к списку</a>
+        <a href="{{ url_for('car_report', car_id=car.id) }}" class="btn btn-primary ms-2">Отчет этой машины</a>
     </div>
 </div>
 {% endblock %} 

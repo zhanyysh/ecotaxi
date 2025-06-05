@@ -5,26 +5,38 @@
 {% block content %}
 <h2>Мои машины</h2>
 
-<div class="row">
-    {% for car in cars %}
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ car.model }}</h5>
-                <p class="card-text">
-                    <strong>Гос. номер:</strong> {{ car.licensePlate }}<br>
-                    <strong>Год выпуска:</strong> {{ car.year }}<br>
-                </p>
-                <a href="{{ url_for('car_details', car_id=car.id) }}" class="btn btn-primary">Подробнее</a>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="col-12">
-        <div class="alert alert-info">
-            У вас пока нет машин в системе.
-        </div>
-    </div>
-    {% endfor %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Модель</th>
+                <th>Гос. номер</th>
+                <th>Год выпуска</th>
+                <th>Процент</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for car in cars %}
+            <tr>
+                <td>{{ car.model }}</td>
+                <td>{{ car.licensePlate }}</td>
+                <td>{{ car.year }}</td>
+                <td>{{ car.percentage }}%</td>
+                <td>
+                    <a href="{{ url_for('car_details', car_id=car.id) }}" class="btn btn-primary btn-sm">Подробнее</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">
+                    <div class="alert alert-info mb-0">
+                        У вас пока нет машин в системе.
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %} 
