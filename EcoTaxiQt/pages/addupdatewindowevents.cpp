@@ -233,7 +233,7 @@ void addupdatewindowEvents::on_paidButton_clicked() {
         0, // Set debt to 0 since it's a payment
         currentDolg, // Set amount equal to the debt being paid
         paymentDesc,
-        ui->DateTimeEdit->dateTime()
+        QDateTime::currentDateTime() // Используем текущую дату и время
     })));
 
     // Clear debt in current event

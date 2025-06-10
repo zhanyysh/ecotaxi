@@ -6,15 +6,15 @@ GreenBackgroundDelegate::GreenBackgroundDelegate(QObject *parent)
 
 void GreenBackgroundDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
     QVariant value = index.data(Qt::DisplayRole);
-    bool isZero = false;
+    bool isPositive = false;
 
-    // Check if the value in the current cell is zero
+    // Check if the value in the current cell is positive
     if (value.canConvert<double>()) {
-        isZero = qFuzzyIsNull(value.toDouble());
+        isPositive = (value.toDouble() > 0.0);
     } else if (value.canConvert<int>()) {
-        isZero = (value.toInt() == 0);
+        isPositive = (value.toInt() > 0);
     } else {
-        isZero = (value.toString().trimmed() == "0");
+        isPositive = (value.toString().trimmed().toDouble() > 0.0);
     }
 
     // Check the value in column 2 of the same row
@@ -25,7 +25,7 @@ void GreenBackgroundDelegate::paint(QPainter *painter, const QStyleOptionViewIte
     QStyleOptionViewItem newOption = option;
 
     // Only apply green background if both conditions are true
-    if (isZero && isRent) {
+    if (isPositive && isRent) {
         newOption.backgroundBrush = QColor(0, 119, 0);  // Green background
     }
 
