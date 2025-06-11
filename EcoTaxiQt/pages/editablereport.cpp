@@ -274,14 +274,11 @@ void EditableReport::setTableSize()
     ui->tableView->setColumnHidden(0, true);
 
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
-
     ui->tableView->horizontalHeader()->setCascadingSectionResizes(true);
 
     switch (this->mode) {
-    case eSetting::Repairs:
-    case eSetting::Fines:
+    case eSetting::Repairs: {
         ui->tableView->setColumnWidth(1, 200);
         ui->tableView->setColumnWidth(2, 200);
         ui->tableView->setColumnWidth(3, 200);
@@ -289,6 +286,18 @@ void EditableReport::setTableSize()
         ui->tableView->setColumnWidth(5, 200);
         ui->tableView->setColumnWidth(6, 200);
         break;
+    }
+    case eSetting::Fines: {
+        ui->tableView->setColumnWidth(1, 130); // Дата
+        ui->tableView->setColumnWidth(2, 110); // Время
+        ui->tableView->setColumnWidth(3, 100); // FID
+        ui->tableView->setColumnWidth(4, 140); // Машина
+        ui->tableView->setColumnWidth(5, 140); // Водитель
+        ui->tableView->setColumnWidth(6, 140); // Сумма (стало шире)
+        ui->tableView->setColumnWidth(7, 100); // Оплачен
+        ui->tableView->horizontalHeader()->setSectionResizeMode(8, QHeaderView::Stretch); // Описание
+        break;
+    }
     default:
         break;
     }

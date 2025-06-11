@@ -73,6 +73,22 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
 
     db = &dbManager::getInstance();
 
+    // Фильтрация пунктов меню 'ОТЧЕТЫ' для обычных пользователей
+    if (!u.checkIsAdmin()) {
+        // Оставляем только:
+        // 2: ПО МАШИНАМ
+        // 3: ПО ВОДИТЕЛЯМ
+        // 4: ПО ЛОКАЦИЯМ
+        // 6: ПО ЗАРЯДКАМ
+        // 9: ИСТОРИЯ ВЫПЛАТ
+        // Удаляем с конца, чтобы индексы не смещались
+        ui->ReportsButton->removeItem(8); // ДОЛГИ
+        ui->ReportsButton->removeItem(7); // ПО ТИПУ
+        ui->ReportsButton->removeItem(5); // ПО ПОЛЬЗОВАТЕЛЯМ
+        ui->ReportsButton->removeItem(1); // ОБЩИЙ
+        ui->ReportsButton->removeItem(0); // ПО ИНВЕСТОРАМ
+    }
+
     openWidnow();
 }
 

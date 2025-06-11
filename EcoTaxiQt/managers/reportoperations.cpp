@@ -301,7 +301,8 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
         "        cars.id AS carId,\n"
         "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) AS income,\n"
         "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) * 0.05 AS incomeTax,\n"
-        "        SUM(CASE WHEN events.amount < 0 THEN events.amount ELSE 0 END) AS outcome\n"
+        "        SUM(CASE WHEN events.amount < 0 THEN events.amount ELSE 0 END) AS outcome,\n"
+        "        SUM(COALESCE(events.dolg, 0)) AS totalDebt\n" // добавили сумму долгов
         "    FROM events\n"
         "    LEFT JOIN cars ON cars.id = events.carId\n"
         "    WHERE events.date BETWEEN '" +
@@ -324,6 +325,7 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
         "    investors.id AS investorId,\n"
         "    investors.name AS investorName,\n"
         "    COALESCE(SUM(event_stats.income), 0) AS income,\n"
+        "    COALESCE(SUM(event_stats.totalDebt), 0) AS totalDebt,\n" // добавили долг
         "    FLOOR(COALESCE(SUM(event_stats.incomeTax), 0)) AS incomeTax,\n"
         "    COALESCE(SUM(charge_stats.totalKwh), 0) AS totalKwh,\n"
         "    COALESCE(SUM(event_stats.outcome), 0) AS outcome,\n"
@@ -369,6 +371,7 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS incomeTax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
+        "           SUM(COALESCE(dolg, 0)) AS totalDebt,\n" // добавили сумму долгов
         "           SUM(COALESCE(amount, 0)) AS totalAmount\n"
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
@@ -394,6 +397,7 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
         "        FLOOR((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) AS totalProfit,\n"
         "        COALESCE(charges.totalKwh, 0) AS totalKwh,\n"
         "        COALESCE(cars.percentage, 0) AS percentage,\n"
+        "        COALESCE(events.totalDebt, 0) AS totalDebt,\n" // добавили долг
         "        CASE \n"
         "            WHEN (events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome >= 0 THEN \n"
         "                FLOOR(cars.percentage * ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
@@ -413,6 +417,7 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
         ")\n"
         "SELECT\n"
         "    FLOOR(SUM(income)) AS totalIncome,\n"
+        "    FLOOR(SUM(totalDebt)) AS totalDebt,\n" // добавили итоговый долг
         "    FLOOR(SUM(incomeTax)) AS totalIncomeTax,\n"
         "    FLOOR(SUM(totalKwh) * 10) AS totalKwhCost,\n"
         "    FLOOR(SUM(outcome)) AS totalOutcome,\n"
@@ -665,7 +670,8 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "   cars.licensePlate,\n"
         "   investors.name AS investorName,\n"
         "   drivers.name AS driverName,\n"
-        "   events.dolg AS debtAmount\n"
+        "   events.dolg AS debtAmount,\n"
+        "   DATE_FORMAT(events.date, '%Y-%m-%d') AS debtDate\n" // добавляем дату в формате YYYY-MM-DD
         "FROM events\n"
         "LEFT JOIN cars ON events.carId = cars.id\n"
         "LEFT JOIN types ON events.typeId = types.id\n"
@@ -812,13 +818,14 @@ QVariantList ReportOperations::getCarReport(int carId, QDate fromDate, QDate toD
         "    CASE WHEN events.typeId = 0 THEN '-' ELSE CASE WHEN types.id IS NULL THEN 'удален' ELSE types.name END END as eventTypeName,\n"
         "    CASE WHEN events.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as driverIdAndName,\n"
         "    events.amount as eventAmount,\n"
+        "    events.dolg as eventDebt,\n"
         "    events.description as eventDescription\n"
         "FROM events\n"
         "LEFT JOIN drivers ON drivers.id = events.driverId\n"
         "LEFT JOIN types ON types.id = events.typeId\n"
         "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-                                                                                      "AND events.carId = " +
+        "AND events.carId = " +
         QString::number(carId) +
         "\nORDER BY events.date DESC";
     result = db.executeGet(query);
@@ -837,7 +844,8 @@ QVariantList ReportOperations::getAllCarReport(int carId, QDate fromDate, QDate 
         "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS totalIncome,\n"
         "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05, 0) AS totalIncomeTax,\n"
         "        COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) AS totalOutcome,\n"
-        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount * 0.95 ELSE 0 END), 0) AS totalEventProfit\n"
+        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount * 0.95 ELSE 0 END), 0) AS totalEventProfit,\n"
+        "        COALESCE(SUM(dolg), 0) AS totalDebt\n" // <--- добавили сумму долгов
         "    FROM events\n"
         "    WHERE carId = " +
         QString::number(carId) + "\n"
@@ -876,7 +884,8 @@ QVariantList ReportOperations::getAllCarReport(int carId, QDate fromDate, QDate 
         "            FLOOR(COALESCE(e.totalEventProfit, 0) - COALESCE(c.totalKwh, 0) + COALESCE(e.totalOutcome, 0)) \n"
         "        ELSE \n"
         "            FLOOR((COALESCE(e.totalEventProfit, 0) - COALESCE(c.totalKwh, 0) + COALESCE(e.totalOutcome, 0)) * (100 - COALESCE(cars.percentage, 0)) / 100) \n"
-        "    END AS investorsProfit\n"
+        "    END AS investorsProfit,\n"
+        "    COALESCE(e.totalDebt, 0) AS totalDebt\n" // <--- добавили вывод суммы долгов
         "FROM cars\n"
         "LEFT JOIN grouped_events AS e ON cars.id = e.carId\n"
         "LEFT JOIN grouped_charges AS c ON cars.id = c.carId\n"
@@ -1024,7 +1033,8 @@ QVariantList ReportOperations::getInvestorReport(int investorId, QDate fromDate,
         "        carId,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 as incomeTax,\n"
-        "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome\n"
+        "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome,\n"
+        "        SUM(COALESCE(dolg, 0)) as totalDebt\n" // добавили сумму долгов
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
@@ -1049,7 +1059,8 @@ QVariantList ReportOperations::getInvestorReport(int investorId, QDate fromDate,
         "        FLOOR(COALESCE(event_stats.incomeTax, 0)) as incomeTax,\n"
         "        COALESCE(event_stats.outcome, 0) as outcome,\n"
         "        COALESCE(charge_stats.kwh, 0) as kwh,\n"
-        "        COALESCE(cars.percentage, 0) as percentage\n"
+        "        COALESCE(cars.percentage, 0) as percentage,\n"
+        "        COALESCE(event_stats.totalDebt, 0) as totalDebt\n" // добавили долг
         "    FROM investors\n"
         "    JOIN cars ON cars.investorId = investors.id\n"
         "    LEFT JOIN event_stats ON cars.id = event_stats.carId\n"
@@ -1078,7 +1089,8 @@ QVariantList ReportOperations::getInvestorReport(int investorId, QDate fromDate,
         "            FLOOR(income * 0.95 - kwh + outcome) \n"
         "        ELSE \n"
         "            FLOOR((income * 0.95 - kwh + outcome) * COALESCE(100 - percentage, 0) / 100) \n"
-        "    END AS investorsProfit\n"
+        "    END AS investorsProfit,\n"
+        "    totalDebt\n" // добавили долг в результат
         "FROM car_stats;";
 
     result = db.executeGet(query);
@@ -1096,7 +1108,8 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
         "        carId,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 AS incomeTax,\n"
-        "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS outcome\n"
+        "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS outcome,\n"
+        "        SUM(COALESCE(dolg, 0)) AS totalDebt\n" // добавили сумму долгов
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
@@ -1132,7 +1145,8 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
         "                (COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) \n"
         "            ELSE \n"
         "                (COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * ((100 - COALESCE(cars.percentage, 0)) / 100) \n"
-        "        END) AS investorsProfit\n"
+        "        END) AS investorsProfit,\n"
+        "        COALESCE(event_stats.totalDebt, 0) AS totalDebt\n" // добавили долг
         "    FROM investors\n"
         "    LEFT JOIN cars ON cars.investorId = investors.id\n"
         "    LEFT JOIN event_stats ON cars.id = event_stats.carId\n"
@@ -1150,7 +1164,8 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
         "    FLOOR(SUM(profit)) AS totalProfit,\n"
         "    COUNT(carId) AS totalCarsCount,\n"
         "    FLOOR(SUM(ourProfit)) AS totalOurIncome,\n"
-        "    FLOOR(SUM(investorsProfit)) AS totalInvestorsIncome\n"
+        "    FLOOR(SUM(investorsProfit)) AS totalInvestorsIncome,\n"
+        "    FLOOR(SUM(totalDebt)) AS totalDebt\n" // добавили итоговый долг
         "FROM car_stats\n"
         "GROUP BY investorName;";
     QVariantList data = db.executeGet(query);
@@ -1163,7 +1178,7 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
     }
     else
     {
-        result.append({0, 0, 0, 0, 0, 0, 0, 0});
+        result.append({0, 0, 0, 0, 0, 0, 0, 0, 0});
     }
 
     return result;

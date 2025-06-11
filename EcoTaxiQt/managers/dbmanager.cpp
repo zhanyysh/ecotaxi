@@ -359,6 +359,7 @@ void dbManager::createPaymentsTable()
             investor_id INTEGER NOT NULL,
             date DATE NOT NULL,
             amount DOUBLE NOT NULL,
+            description TEXT,
             FOREIGN KEY (investor_id) REFERENCES investors(id)
         )
     )Q";

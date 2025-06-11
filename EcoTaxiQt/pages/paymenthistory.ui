@@ -161,6 +161,111 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="filterLayout">
+     <item>
+      <widget class="QLabel" name="label_date_from">
+       <property name="text">
+        <string>С:</string>
+       </property>
+       <property name="styleSheet">
+        <string>color: #007700; font-size: 22px; font-weight: bold;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="dateFromButton">
+       <property name="text">
+        <string>01.01.2025</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { border-radius: 12px; background-color: #007700; color: white; font-size: 22px; font-weight: bold; padding: 8px 16px; } QPushButton:hover { background-color: #005500; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_date_to">
+       <property name="text">
+        <string>По:</string>
+       </property>
+       <property name="styleSheet">
+        <string>color: #007700; font-size: 22px; font-weight: bold;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="dateToButton">
+       <property name="text">
+        <string>11.06.2025</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { border-radius: 12px; background-color: #007700; color: white; font-size: 22px; font-weight: bold; padding: 8px 16px; } QPushButton:hover { background-color: #005500; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_investor_filter">
+       <property name="text">
+        <string>Инвестор:</string>
+       </property>
+       <property name="styleSheet">
+        <string>color: #007700; font-size: 22px; font-weight: bold;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="investorFilterComboBox">
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>font-size: 22px; font-weight: bold; background: white; border: 2px solid #007700; border-radius: 12px; padding: 8px 16px;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_desc_filter">
+       <property name="text">
+        <string>Описание:</string>
+       </property>
+       <property name="styleSheet">
+        <string>color: #007700; font-size: 22px; font-weight: bold;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="descFilterLineEdit">
+       <property name="placeholderText">
+        <string>Поиск по описанию</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>font-size: 22px; font-weight: bold; background: white; border: 2px solid #007700; border-radius: 12px; padding: 8px 16px;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QTableView" name="tableView">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">

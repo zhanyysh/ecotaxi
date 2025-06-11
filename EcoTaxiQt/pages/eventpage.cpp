@@ -132,12 +132,6 @@ bool eventPage::setTable()
     }
     ui->tableView->setModel(model);
 
-    if (this->table == Events::Events)
-    {
-        GreenBackgroundDelegate *delegate = new GreenBackgroundDelegate(ui->tableView);
-        ui->tableView->setItemDelegateForColumn(5, delegate);
-    }
-
     ui->tableView->setColumnHidden(0, true);
 
     ui->tableView->resizeColumnsToContents();
