@@ -665,7 +665,8 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "   cars.licensePlate,\n"
         "   investors.name AS investorName,\n"
         "   drivers.name AS driverName,\n"
-        "   events.dolg AS debtAmount\n"
+        "   events.dolg AS debtAmount,\n"
+        "   DATE_FORMAT(events.date, '%Y-%m-%d') AS debtDate\n" // добавляем дату в формате YYYY-MM-DD
         "FROM events\n"
         "LEFT JOIN cars ON events.carId = cars.id\n"
         "LEFT JOIN types ON events.typeId = types.id\n"

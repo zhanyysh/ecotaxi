@@ -194,6 +194,38 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="label_investor_filter">
+       <property name="text">
+        <string>Инвестор:</string>
+       </property>
+       <property name="styleSheet">
+        <string>color: #007700; font-size: 22px; font-weight: bold;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="investorFilterComboBox">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>font-size: 22px; font-weight: bold; background: white; border: 2px solid #007700; border-radius: 12px; padding: 8px 16px;</string>
+       </property>
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+       <property name="insertPolicy">
+        <enum>QComboBox::InsertAtBottom</enum>
+       </property>
+       <property name="placeholderText">
+        <string>Инвестор</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_AfterCarFilterComboBox">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
