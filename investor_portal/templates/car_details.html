@@ -58,6 +58,7 @@
                             <th>Тип</th>
                             <th>Водитель</th>
                             <th>Сумма</th>
+                            <th>Долг</th>
                             <th>Описание</th>
                         </tr>
                     </thead>
@@ -68,18 +69,20 @@
                             <td>{{ event.type or '-' }}</td>
                             <td>{{ event.driver or '-' }}</td>
                             <td>{{ event.amount }}</td>
+                            <td>{{ event.dolg }}</td>
                             <td>{{ event.description or '' }}</td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" class="text-center">Нет данных по событиям для этой машины.</td>
+                            <td colspan="6" class="text-center">Нет данных по событиям для этой машины.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr class="table-secondary fw-bold">
-                            <td colspan="3">Итого событий: {{ events_total.count }}</td>
-                            <td colspan="2"></td>
+                            <td colspan="4">Итого событий: {{ events_total.count }}</td>
+                            <td>{{ events_total.debt }}</td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -92,6 +95,7 @@
                     <thead class="table-success">
                         <tr>
                             <th>Доход</th>
+                            <th>Долг</th>
                             <th>Налог 5%</th>
                             <th>KWH * 10</th>
                             <th>Расход</th>
@@ -104,6 +108,7 @@
                     <tbody>
                         <tr class="table-secondary fw-bold">
                             <td>{{ events_total.income }}</td>
+                            <td>{{ events_total.debt }}</td>
                             <td>{{ events_total.tax }}</td>
                             <td>{{ events_total.kwh }}</td>
                             <td>{{ events_total.outcome }}</td>

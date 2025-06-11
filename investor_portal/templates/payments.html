@@ -11,8 +11,7 @@
             <tr>
                 <th>Дата</th>
                 <th>Сумма</th>
-                <th>Тип выплаты</th>
-                <th>Комментарий</th>
+                <th>Описание</th>
             </tr>
         </thead>
         <tbody>
@@ -20,12 +19,11 @@
             <tr>
                 <td>{{ payment.date.strftime('%d.%m.%Y') }}</td>
                 <td>{{ payment.amount }} ₽</td>
-                <td>{{ payment.type }}</td>
-                <td>{{ payment.comment }}</td>
+                <td>{{ payment.description }}</td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4" class="text-center">История выплат пуста</td>
+                <td colspan="3" class="text-center">История выплат пуста</td>
             </tr>
             {% endfor %}
         </tbody>

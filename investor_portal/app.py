@@ -124,7 +124,8 @@ def dashboard():
                 carId,
                 SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income,
                 SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 as tax,
-                SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome
+                SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome,
+                SUM(COALESCE(dolg, 0)) as debt
             FROM events
             WHERE carId IN (SELECT id FROM cars WHERE investorId = %s){event_date_filter}
             GROUP BY carId
@@ -144,6 +145,7 @@ def dashboard():
             FLOOR(COALESCE(event_stats.tax, 0)) as tax,
             COALESCE(charge_stats.kwh, 0) as kwh,
             COALESCE(event_stats.outcome, 0) as outcome,
+            COALESCE(event_stats.debt, 0) as debt,
             FLOOR(COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) as total,
             COALESCE(cars.percentage, 0) as percent,
             FLOOR((COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * (COALESCE(cars.percentage, 0) / 100)) as commission,
@@ -164,6 +166,7 @@ def dashboard():
         'tax': sum(car['tax'] or 0 for car in cars_report),
         'kwh': sum(car['kwh'] or 0 for car in cars_report),
         'outcome': sum(car['outcome'] or 0 for car in cars_report),
+        'debt': sum(car['debt'] or 0 for car in cars_report),
         'total': sum(car['total'] or 0 for car in cars_report),
         'commission': sum(car['commission'] or 0 for car in cars_report),
         'to_investor': sum(car['to_investor'] or 0 for car in cars_report),
@@ -200,7 +203,7 @@ def car_details(car_id):
         params.append(end_date_dt.strftime('%Y-%m-%d %H:%M:%S'))
     # Получаем события по машине (с фильтром по датам)
     cursor.execute(f'''
-        SELECT events.date, types.name AS type, drivers.name AS driver, events.amount, events.description
+        SELECT events.date, types.name AS type, drivers.name AS driver, events.amount, events.dolg, events.description
         FROM events
         LEFT JOIN types ON events.typeId = types.id
         LEFT JOIN drivers ON events.driverId = drivers.id
@@ -213,6 +216,7 @@ def car_details(car_id):
     income = sum(event['amount'] or 0 for event in events if event['amount'] and event['amount'] > 0)
     tax = int(income * 0.05)
     outcome = sum(event['amount'] or 0 for event in events if event['amount'] and event['amount'] < 0)
+    debt = sum(event['dolg'] or 0 for event in events)
     total = int(income * 0.95 + outcome)  # Общая прибыль по событиям
     # Получаем kwh по зарядкам
     kwh = 0
@@ -238,6 +242,7 @@ def car_details(car_id):
         'tax': tax,
         'kwh': kwh,
         'outcome': outcome,
+        'debt': debt,
         'total': total_with_kwh,
         'percent': percent,
         'commission': commission,
