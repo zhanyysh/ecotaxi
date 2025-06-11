@@ -31,6 +31,7 @@
             <tr>
                 <th>ID</th>
                 <th>Доход</th>
+                <th>Долг</th>
                 <th>Налог 5%</th>
                 <th>KWH * 10</th>
                 <th>Расход</th>
@@ -46,6 +47,7 @@
             <tr>
                 <td>{{ car.car_sid }}</td>
                 <td>{{ car.income }}</td>
+                <td>{{ car.debt }}</td>
                 <td>{{ car.tax }}</td>
                 <td>{{ car.kwh }}</td>
                 <td>{{ car.outcome }}</td>
@@ -67,6 +69,7 @@
             <tr class="table-secondary fw-bold">
                 <td>Итого</td>
                 <td>{{ cars_report_total.income }}</td>
+                <td>{{ cars_report_total.debt }}</td>
                 <td>{{ cars_report_total.tax }}</td>
                 <td>{{ cars_report_total.kwh }}</td>
                 <td>{{ cars_report_total.outcome }}</td>
