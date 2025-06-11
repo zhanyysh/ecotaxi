@@ -54,6 +54,18 @@
         .card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6 {
             color: #fff !important;
         }
+        /* --- Мобильная адаптивность --- */
+        @media (max-width: 576px) {
+            h1, h2, h3, h4, h5, h6 { font-size: 1.1rem; }
+            .table th, .table td { padding: 0.3rem; font-size: 0.95rem; }
+            .btn, .form-control { font-size: 0.95rem; padding: 0.4rem 0.7rem; }
+            .navbar-brand, .nav-link { font-size: 1rem; }
+            .card { margin: 0.5rem 0; }
+            .content { padding: 5px; }
+            .table-responsive { overflow-x: auto; }
+            form.row.g-3.mb-3, .row.g-3.mb-3 { flex-direction: column !important; }
+            .col-auto, .col { width: 100% !important; }
+        }
     </style>
 </head>
 <body>
