@@ -32,6 +32,12 @@ GeneralReport::GeneralReport(nm *nav, QWidget *parent)
 
     // Connect investor filter combo box signal directly to setTable
     connect(ui->investorFilterComboBox, &QComboBox::currentTextChanged, this, &GeneralReport::setTable);
+
+    // Connect debt filter combo box signal directly to setTable
+    connect(ui->debtFilterComboBox, &QComboBox::currentTextChanged, this, &GeneralReport::setTable);
+
+    // Connect reset button
+    connect(ui->resetFiltersButton, &QPushButton::clicked, this, &GeneralReport::on_resetFiltersButton_clicked);
 }
 
 GeneralReport::~GeneralReport()
@@ -49,7 +55,6 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
     {
         this->fromDate = from;
         this->toDate = to;
-
         ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
         ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
     }
@@ -68,6 +73,12 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
         // Populate driver combo box if in FinesByDrivers mode
         populateDriverComboBox();
     }
+
+    // Показываем расширенные фильтры только для отчета по долгам
+    bool isDebts = (this->mode == Report::Debts);
+    ui->filtersMainLayout->itemAt(0)->widget() ? ui->filtersMainLayout->itemAt(0)->widget()->setVisible(isDebts) : void(); // periodLayout
+    ui->filtersMainLayout->itemAt(1)->widget() ? ui->filtersMainLayout->itemAt(1)->widget()->setVisible(isDebts) : void(); // filtersLayout
+    if (ui->resetFiltersButton) ui->resetFiltersButton->setVisible(isDebts);
 }
 
 void GeneralReport::setHeader()
@@ -77,48 +88,72 @@ void GeneralReport::setHeader()
     case Report::Cars:
         ui->Header->setText("ПО МАШИНАМ");
         ui->ReportButton->setText("ОТЧЕТ ПО МАШИНЕ");
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
 
     case Report::Drivers:
         ui->Header->setText("ПО ВОДИТЕЛЯМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
 
     case Report::Investors:
         ui->Header->setText("ПО ИНВЕСТОРАМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ИНВЕСТОРУ");
+        ui->label_investor_filter->show();
+        ui->investorFilterComboBox->show();
         break;
 
     case Report::Types:
         ui->Header->setText("ОБЩИЙ");
         ui->ReportButton->setText("ОТЧЕТ ПО ТИПУ");
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
 
     case Report::Locations:
         ui->Header->setText("ПО ЛОКАЦИЯМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ЛОКАЦИИ");
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
 
     case Report::Charges:
         ui->Header->setText("ПО ЗАРЯДКАМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ЗАРЯДКЕ");
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
 
     case Report::Users:
         ui->Header->setText("ПО ПОЛЬЗОВАТЕЛЯМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ПОЛЬЗОВАТЕЛЮ");
         ui->SecondReportButton->setText("ОБЩИЙ");
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
 
     case Report::Users2:
         ui->Header->setText("ПО КОЛИЧЕСТВУ ДЕЙСТВИЙ");
         ui->ReportButton->setText("ОТЧЕТ ПО ПОЛЬЗОВАТЕЛЮ");
         ui->SecondReportButton->setText("ДЕТАЛЬНО");
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
 
     case Report::Debts:
         ui->Header->setText("ПО ДОЛГАМ");
         ui->ReportButton->setText("ОТЧЕТ ПО МАШИНЕ");
+        ui->label_car_filter->show();
+        ui->carFilterComboBox->show();
+        ui->label_investor_filter->show();
+        ui->investorFilterComboBox->show();
+        ui->label_driver_filter->show();
+        ui->driverFilterComboBox->show();
+        ui->label_debt_filter->show();
+        ui->debtFilterComboBox->show();
         break;
     
     case Report::FinesByCars:
@@ -128,6 +163,8 @@ void GeneralReport::setHeader()
         ui->carFilterComboBox->show();
         ui->label_driver_filter->hide();
         ui->driverFilterComboBox->hide();
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
     
     case Report::FinesByDrivers:
@@ -137,6 +174,8 @@ void GeneralReport::setHeader()
         ui->carFilterComboBox->hide();
         ui->label_driver_filter->show();
         ui->driverFilterComboBox->show();
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
         break;
     }
 }
@@ -147,67 +186,64 @@ void GeneralReport::setTable()
 
     switch (this->mode)
     {
-    case Report::Cars:
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+    case Report::Cars: {
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Долг", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        QMap<QString, int> carDebts;
+        for (const QVariant &debt : ReportOperations::getDebtsReport(this->fromDate, this->toDate)) {
+            QVariantList d = debt.toList();
+            QString license = d[1].toString();
+            int amount = d[4].toInt();
+            carDebts[license] += amount;
+        }
         for (const QVariant &car : ReportOperations::getCarsReport(this->fromDate, this->toDate))
         {
             QVariantList cars = car.toList();
             QList<QStandardItem *> row;
-
-            // Assume that the data in cars[] is in the correct order and types.
             row.append(new QStandardItem(cars[0].toString()));  // carId
             row.append(new QStandardItem(cars[1].toString()));  // carSid
             row.append(new QStandardItem(cars[2].toString()));  // investorName
-
-            // Ensure numerical data is set correctly for sorting
             QStandardItem *incomeItem = new QStandardItem();
             incomeItem->setData(cars[3].toInt(), Qt::DisplayRole);
             row.append(incomeItem); // income
-
+            QString license = cars[1].toString();
+            int debt = carDebts.value(license, 0);
+            QStandardItem *debtItem = new QStandardItem();
+            debtItem->setData(debt, Qt::DisplayRole);
+            row.append(debtItem); // долг
             QStandardItem *taxItem = new QStandardItem();
             taxItem->setData(cars[4].toInt(), Qt::DisplayRole);
             row.append(taxItem); // tax
-
             QStandardItem *kwhItem = new QStandardItem();
             kwhItem->setData(cars[5].toInt(), Qt::DisplayRole);
             row.append(kwhItem); // kwh * 10
-
             QStandardItem *outcomeItem = new QStandardItem();
             outcomeItem->setData(cars[6].toInt(), Qt::DisplayRole);
             row.append(outcomeItem); // outcome
-
             QStandardItem *profitItem = new QStandardItem();
             profitItem->setData(cars[7].toInt(), Qt::DisplayRole);
             row.append(profitItem); // profit
-
             QStandardItem *daysItem = new QStandardItem();
             daysItem->setData(cars[8].toInt(), Qt::DisplayRole);
             row.append(daysItem); // daysWorked
-
             QStandardItem *daysItem2 = new QStandardItem();
             daysItem2->setData(cars[9].toInt(), Qt::DisplayRole);
             row.append(daysItem2); // nonZeroDays
-
             QStandardItem *averageItem = new QStandardItem();
             averageItem->setData(cars[10].toInt(), Qt::DisplayRole);
             row.append(averageItem); // averageProfitPerDay
-
             QStandardItem *percentageItem = new QStandardItem();
             percentageItem->setData(cars[11].toInt(), Qt::DisplayRole);
             row.append(percentageItem); // percentage
-
             QStandardItem *ourIncomeItem = new QStandardItem();
             ourIncomeItem->setData(cars[12].toInt(), Qt::DisplayRole);
             row.append(ourIncomeItem); // ourIncome
-
             QStandardItem *investorsIncomeItem = new QStandardItem();
             investorsIncomeItem->setData(cars[13].toInt(), Qt::DisplayRole);
             row.append(investorsIncomeItem); // investorsIncome
-
             model->appendRow(row);
         }
-
         break;
+    }
     case Report::Types:
         model->setHorizontalHeaderLabels({"ID", "Название", "Доход", "Расход", "Прибыль"});
         for (const QVariant &type : ReportOperations::getTypesReport(this->fromDate, this->toDate))
@@ -269,45 +305,57 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
-        for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Долг", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
         {
-            QVariantList investors = investor.toList();
-            QList<QStandardItem *> row;
-
-            row.append(new QStandardItem(investors[0].toString()));  // ID
-            row.append(new QStandardItem(investors[1].toString()));  // Имя
-
-            // Ensure numerical data is set correctly for sorting as integers
-            QStandardItem *incomeItem = new QStandardItem();
-            incomeItem->setData(investors[2].toInt(), Qt::DisplayRole);
-            row.append(incomeItem); // Доход
-
-            QStandardItem *taxItem = new QStandardItem();
-            taxItem->setData(investors[3].toInt(), Qt::DisplayRole);
-            row.append(taxItem); // Налог
-
-            QStandardItem *kwhItem = new QStandardItem();
-            kwhItem->setData(investors[4].toInt(), Qt::DisplayRole);
-            row.append(kwhItem); // kwh * 10
-
-            QStandardItem *expenseItem = new QStandardItem();
-            expenseItem->setData(investors[5].toInt(), Qt::DisplayRole);
-            row.append(expenseItem); // Расход
-
-            QStandardItem *profitItem = new QStandardItem();
-            profitItem->setData(investors[6].toInt(), Qt::DisplayRole);
-            row.append(profitItem); // Прибыль
-
-            QStandardItem *ourMoneyItem = new QStandardItem();
-            ourMoneyItem->setData(investors[7].toInt(), Qt::DisplayRole);
-            row.append(ourMoneyItem); // Наша прибыль
-
-            QStandardItem *investorsMoneyItem = new QStandardItem();
-            investorsMoneyItem->setData(investors[8].toInt(), Qt::DisplayRole);
-            row.append(investorsMoneyItem); // Прибыль инвестора
-
-            model->appendRow(row);
+            QString selectedInvestor = ui->investorFilterComboBox->currentText();
+            for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
+            {
+                QVariantList investors = investor.toList();
+                if (!selectedInvestor.isEmpty() && investors[1].toString() != selectedInvestor) continue;
+                QList<QStandardItem *> row;
+                row.append(new QStandardItem(investors[0].toString()));  // ID
+                row.append(new QStandardItem(investors[1].toString()));  // Имя
+                QStandardItem *incomeItem = new QStandardItem();
+                incomeItem->setData(investors[2].toInt(), Qt::DisplayRole);
+                row.append(incomeItem); // Доход
+                QStandardItem *debtItem = new QStandardItem();
+                debtItem->setData(investors[3].toInt(), Qt::DisplayRole);
+                row.append(debtItem); // Долг
+                QStandardItem *taxItem = new QStandardItem();
+                taxItem->setData(investors[4].toInt(), Qt::DisplayRole);
+                row.append(taxItem); // Налог
+                QStandardItem *kwhItem = new QStandardItem();
+                kwhItem->setData(investors[5].toInt(), Qt::DisplayRole);
+                row.append(kwhItem); // kwh * 10
+                QStandardItem *expenseItem = new QStandardItem();
+                expenseItem->setData(investors[6].toInt(), Qt::DisplayRole);
+                row.append(expenseItem); // Расход
+                QStandardItem *profitItem = new QStandardItem();
+                profitItem->setData(investors[7].toInt(), Qt::DisplayRole);
+                row.append(profitItem); // Прибыль
+                QStandardItem *ourMoneyItem = new QStandardItem();
+                ourMoneyItem->setData(investors[8].toInt(), Qt::DisplayRole);
+                row.append(ourMoneyItem); // Наша прибыль
+                QStandardItem *investorsMoneyItem = new QStandardItem();
+                investorsMoneyItem->setData(investors[9].toInt(), Qt::DisplayRole);
+                row.append(investorsMoneyItem); // Прибыль инвестора
+                model->appendRow(row);
+            }
+            
+            // Заполняем фильтр инвесторов
+            QString investorCurrent = ui->investorFilterComboBox->currentText();
+            ui->investorFilterComboBox->blockSignals(true);
+            ui->investorFilterComboBox->clear();
+            ui->investorFilterComboBox->addItem("");
+            QSet<QString> investors;
+            for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate)) {
+                QVariantList investorData = investor.toList();
+                investors.insert(investorData[1].toString()); // Имя инвестора
+            }
+            for (const QString &inv : investors) ui->investorFilterComboBox->addItem(inv);
+            int invIdx = ui->investorFilterComboBox->findText(investorCurrent);
+            if (invIdx >= 0) ui->investorFilterComboBox->setCurrentIndex(invIdx);
+            ui->investorFilterComboBox->blockSignals(false);
         }
         break;
     case Report::Locations:
@@ -403,45 +451,65 @@ void GeneralReport::setTable()
         break;
 
     case Report::Debts:
-        model->setHorizontalHeaderLabels({"id", "Водитель", "Машина", "Инвестор", "Дата", "Долг"});
+        model->setHorizontalHeaderLabels({"Дата", "Водитель", "Машина", "Инвестор", "Долг"});
         {
             QString selectedCar = ui->carFilterComboBox->currentText();
             QString selectedInvestor = ui->investorFilterComboBox->currentText();
+            QString selectedDriver = ui->driverFilterComboBox->currentText();
+            QString selectedDebt = ui->debtFilterComboBox->currentText();
+            
             for (const QVariant &debt : ReportOperations::getDebtsReport(this->fromDate, this->toDate))
             {
                 QVariantList debts = debt.toList();
                 // debts: id, licensePlate, investorName, driverName, debtAmount, date
+                
+                // Фильтрация по всем колонкам
                 if (!selectedCar.isEmpty() && debts[1].toString() != selectedCar) continue;
                 if (!selectedInvestor.isEmpty() && debts[2].toString() != selectedInvestor) continue;
+                if (!selectedDriver.isEmpty() && debts[3].toString() != selectedDriver) continue;
+                if (!selectedDebt.isEmpty() && debts[4].toString() != selectedDebt) continue;
+                
                 QList<QStandardItem *> row;
-                row.append(new QStandardItem(debts[0].toString()));  // id
+                // Измененный порядок: дата, водитель, машина, инвестор, долг
+                row.append(new QStandardItem(QDate::fromString(debts[5].toString(), "yyyy-MM-dd").toString("dd.MM.yyyy"))); // дата (первая)
                 row.append(new QStandardItem(debts[3].toString()));  // driverName
                 row.append(new QStandardItem(debts[1].toString()));  // licensePlate
                 row.append(new QStandardItem(debts[2].toString()));  // investorName
-                qDebug() << "Debug date value:" << debts[5];
-                row.append(new QStandardItem(QDate::fromString(debts[5].toString(), "yyyy-MM-dd").toString("dd.MM.yyyy"))); // дата
                 QStandardItem *debtAmountItem = new QStandardItem();
                 debtAmountItem->setData(debts[4].toInt(), Qt::DisplayRole);
                 row.append(debtAmountItem); // debtAmount
                 model->appendRow(row);
             }
-            // Заполняем фильтры машинами и инвесторами
+            
+            // Заполняем все фильтры
             QString carCurrent = ui->carFilterComboBox->currentText();
             QString investorCurrent = ui->investorFilterComboBox->currentText();
+            QString driverCurrent = ui->driverFilterComboBox->currentText();
+            QString debtCurrent = ui->debtFilterComboBox->currentText();
+            
+            QSet<QString> cars;
+            QSet<QString> investors;
+            QSet<QString> drivers;
+            QSet<QString> debts;
+            
+            for (const QVariant &debt : ReportOperations::getDebtsReport(this->fromDate, this->toDate)) {
+                QVariantList debtData = debt.toList();
+                cars.insert(debtData[1].toString());
+                investors.insert(debtData[2].toString());
+                drivers.insert(debtData[3].toString());
+                debts.insert(debtData[4].toString());
+            }
+            
+            // Заполняем фильтр машин
             ui->carFilterComboBox->blockSignals(true);
             ui->carFilterComboBox->clear();
             ui->carFilterComboBox->addItem("");
-            QSet<QString> cars;
-            QSet<QString> investors;
-            for (const QVariant &debt : ReportOperations::getDebtsReport(this->fromDate, this->toDate)) {
-                QVariantList debts = debt.toList();
-                cars.insert(debts[1].toString());
-                investors.insert(debts[2].toString());
-            }
             for (const QString &car : cars) ui->carFilterComboBox->addItem(car);
             int carIdx = ui->carFilterComboBox->findText(carCurrent);
             if (carIdx >= 0) ui->carFilterComboBox->setCurrentIndex(carIdx);
             ui->carFilterComboBox->blockSignals(false);
+            
+            // Заполняем фильтр инвесторов
             ui->investorFilterComboBox->blockSignals(true);
             ui->investorFilterComboBox->clear();
             ui->investorFilterComboBox->addItem("");
@@ -449,6 +517,24 @@ void GeneralReport::setTable()
             int invIdx = ui->investorFilterComboBox->findText(investorCurrent);
             if (invIdx >= 0) ui->investorFilterComboBox->setCurrentIndex(invIdx);
             ui->investorFilterComboBox->blockSignals(false);
+            
+            // Заполняем фильтр водителей
+            ui->driverFilterComboBox->blockSignals(true);
+            ui->driverFilterComboBox->clear();
+            ui->driverFilterComboBox->addItem("");
+            for (const QString &driver : drivers) ui->driverFilterComboBox->addItem(driver);
+            int driverIdx = ui->driverFilterComboBox->findText(driverCurrent);
+            if (driverIdx >= 0) ui->driverFilterComboBox->setCurrentIndex(driverIdx);
+            ui->driverFilterComboBox->blockSignals(false);
+            
+            // Заполняем фильтр долгов
+            ui->debtFilterComboBox->blockSignals(true);
+            ui->debtFilterComboBox->clear();
+            ui->debtFilterComboBox->addItem("");
+            for (const QString &debt : debts) ui->debtFilterComboBox->addItem(debt);
+            int debtIdx = ui->debtFilterComboBox->findText(debtCurrent);
+            if (debtIdx >= 0) ui->debtFilterComboBox->setCurrentIndex(debtIdx);
+            ui->debtFilterComboBox->blockSignals(false);
         }
         break;
 
@@ -542,8 +628,12 @@ void GeneralReport::setTable()
 
     ui->tableView->setModel(model);
 
-    // Ensure the first column (ID) is hidden after setting the model
-    ui->tableView->setColumnHidden(0, true);
+    // Ensure the first column (ID) is hidden after setting the model, except for Debts report where date is first
+    if (this->mode != Report::Debts) {
+        ui->tableView->setColumnHidden(0, true);
+    } else {
+        ui->tableView->setColumnHidden(0, false);
+    }
 
     if (this->mode == Report::Users || this->mode == Report::Users2)
     {
@@ -555,7 +645,7 @@ void GeneralReport::setTable()
     }
 
     // Hide car filter combo box for other reports
-    if (this->mode != Report::FinesByCars) {
+    if (this->mode != Report::FinesByCars && this->mode != Report::Debts) {
         ui->label_car_filter->hide();
         ui->carFilterComboBox->hide();
     } else {
@@ -576,12 +666,30 @@ void GeneralReport::setTable()
     if (this->selectedColumn != -1)
         ui->tableView->sortByColumn(this->selectedColumn, this->sortOrder);
 
-    if (this->mode == Report::FinesByDrivers) {
+    if (this->mode == Report::FinesByDrivers || this->mode == Report::Debts) {
         ui->label_driver_filter->show();
         ui->driverFilterComboBox->show();
     } else {
         ui->label_driver_filter->hide();
         ui->driverFilterComboBox->hide();
+    }
+
+    // Hide investor filter combo box for reports that don't need it
+    if (this->mode == Report::Investors || this->mode == Report::Debts) {
+        ui->label_investor_filter->show();
+        ui->investorFilterComboBox->show();
+    } else {
+        ui->label_investor_filter->hide();
+        ui->investorFilterComboBox->hide();
+    }
+
+    // Hide debt filter combo box for reports that don't need it
+    if (this->mode == Report::Debts) {
+        ui->label_debt_filter->show();
+        ui->debtFilterComboBox->show();
+    } else {
+        ui->label_debt_filter->hide();
+        ui->debtFilterComboBox->hide();
     }
 }
 
@@ -595,8 +703,16 @@ void GeneralReport::setBottomTable()
         for (const QVariant &car : ReportOperations::getAllCarsReport(this->fromDate, this->toDate))
         {
             QVariantList cars = car.toList();
+            // Получаем сумму долгов
+            QVariantList debtsTotal = ReportOperations::getAllDebtsReport(this->fromDate, this->toDate);
+            int totalDebt = 0;
+            if (!debtsTotal.isEmpty()) {
+                QVariantList d = debtsTotal[0].toList();
+                if (d.size() > 1) totalDebt = d[1].toInt();
+            }
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
+                                              "Долг",
                                               "Налог 5%",
                                               "KWH * 10",
                                               "Расход",
@@ -608,6 +724,7 @@ void GeneralReport::setBottomTable()
 
             row << new QStandardItem("Итого");
             row << new QStandardItem(cars[0].toString());
+            row << new QStandardItem(QString::number(totalDebt));
             row << new QStandardItem(cars[1].toString());
             row << new QStandardItem(cars[2].toString());
             row << new QStandardItem(cars[3].toString());
@@ -668,9 +785,9 @@ void GeneralReport::setBottomTable()
         for (const QVariant &investor : ReportOperations::getAllInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
-            qDebug() << investors;
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
+                                              "Долг",
                                               "Налог 5%",
                                               "KWH * 10",
                                               "Расход",
@@ -678,17 +795,16 @@ void GeneralReport::setBottomTable()
                                               "Комиссия",
                                               "Инвесторам",
                                               });
-
             QList<QStandardItem *> row;
-
             row << new QStandardItem("Итого");
-            row << new QStandardItem(investors[0].toString());
-            row << new QStandardItem(investors[1].toString());
-            row << new QStandardItem(investors[2].toString());
-            row << new QStandardItem(investors[3].toString());
-            row << new QStandardItem(investors[4].toString());
-            row << new QStandardItem(investors[5].toString());
-            row << new QStandardItem(investors[6].toString());
+            row << new QStandardItem(investors[0].toString()); // Доход
+            row << new QStandardItem(investors[1].toString()); // Долг
+            row << new QStandardItem(investors[2].toString()); // Налог
+            row << new QStandardItem(investors[3].toString()); // KWH * 10
+            row << new QStandardItem(investors[4].toString()); // Расход
+            row << new QStandardItem(investors[5].toString()); // Общая
+            row << new QStandardItem(investors[6].toString()); // Комиссия
+            row << new QStandardItem(investors[7].toString()); // Инвесторам
             model->appendRow(row);
         }
         break;
@@ -874,12 +990,10 @@ void GeneralReport::setTableSizes()
         break;
 
     case Report::Types:
-    case Report::Debts:
-        ui->tableView->setColumnWidth(1, 200);  // Водитель
-        ui->tableView->setColumnWidth(2, 150);  // Машина
-        ui->tableView->setColumnWidth(3, 200);  // Инвестор
-        ui->tableView->setColumnWidth(4, 200);  // Дата
-        ui->tableView->setColumnWidth(5, 150);  // Долг
+        ui->tableView->setColumnWidth(1, 200);  // Название
+        ui->tableView->setColumnWidth(2, 200);  // Доход
+        ui->tableView->setColumnWidth(3, 200);  // Расход
+        ui->tableView->setColumnWidth(4, 200);  // Прибыль
         break;
 
     case Report::Drivers:
@@ -938,6 +1052,14 @@ void GeneralReport::setTableSizes()
         ui->tableView->setColumnWidth(5, 190);
         ui->tableView->setColumnWidth(6, 190);
         ui->tableView->setColumnWidth(7, 190);
+
+    case Report::Debts:
+        ui->tableView->setColumnWidth(0, 200);  // Дата (первая колонка)
+        ui->tableView->setColumnWidth(1, 200);  // Водитель
+        ui->tableView->setColumnWidth(2, 200);  // Машина
+        ui->tableView->setColumnWidth(3, 200);  // Инвестор
+        ui->tableView->setColumnWidth(4, 200);  // Долг
+        break;
 
     default:
         break;
@@ -1087,18 +1209,14 @@ void GeneralReport::on_SecondReportButton_clicked()
 void GeneralReport::on_FromDateButton_clicked()
 {
     CalendarPage *c = new CalendarPage(this->fromDate);
-
     connect(c, &CalendarPage::changeDate, this, &GeneralReport::setFromDate);
-
     c->show();
 }
 
 void GeneralReport::on_ToDateButton_clicked()
 {
     CalendarPage *c = new CalendarPage(this->toDate);
-
     connect(c, &CalendarPage::changeDate, this, &GeneralReport::setToDate);
-
     c->show();
 }
 
@@ -1106,8 +1224,6 @@ void GeneralReport::setFromDate(QDate date)
 {
     this->fromDate = date;
     ui->FromDateButton->setText(date.toString("dd.MM.yyyy"));
-    
-    // Update table after date change
     setTable();
     setBottomTable();
 }
@@ -1116,8 +1232,6 @@ void GeneralReport::setToDate(QDate date)
 {
     this->toDate = date;
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
-    
-    // Update table after date change
     setTable();
     setBottomTable();
 }
@@ -1321,4 +1435,20 @@ void GeneralReport::populateDriverComboBox()
 
     ui->driverFilterComboBox->addItems(drivers);
     ui->driverFilterComboBox->blockSignals(false); // Unblock signals
+}
+
+void GeneralReport::on_resetFiltersButton_clicked()
+{
+    // Сбросить фильтры по машине, инвестору, водителю, долгу
+    ui->carFilterComboBox->setCurrentIndex(0);
+    ui->investorFilterComboBox->setCurrentIndex(0);
+    ui->driverFilterComboBox->setCurrentIndex(0);
+    ui->debtFilterComboBox->setCurrentIndex(0);
+    // Можно добавить сброс периода, если нужно:
+    // this->fromDate = QDate::currentDate().addDays(-1);
+    // this->toDate = QDate::currentDate();
+    // ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+    // ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
+    setTable();
+    setBottomTable();
 }

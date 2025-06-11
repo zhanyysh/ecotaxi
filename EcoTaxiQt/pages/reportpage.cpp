@@ -124,7 +124,7 @@ void ReportPage::setTable()
     switch (this->mode)
     {
     case Report::Cars:
-        model->setHorizontalHeaderLabels({"Дата", "Тип", "Водитель", "Сумма", "Описание"});
+        model->setHorizontalHeaderLabels({"Дата", "Тип", "Водитель", "Сумма", "Долг", "Описание"});
         for (const QVariant &carData : ReportOperations::getCarReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList car = carData.toList();
@@ -134,16 +134,18 @@ void ReportPage::setTable()
             dateItem->setData(car[0].toDateTime(), Qt::DisplayRole);
             row.append(dateItem);
 
-            // Other columns as string
             row.append(new QStandardItem(car[1].toString())); // Тип
             row.append(new QStandardItem(car[2].toString())); // Водитель
 
-            // Ensure numerical data (Сумма) is set correctly for sorting as integers
             QStandardItem *amountItem = new QStandardItem();
             amountItem->setData(car[3].toInt(), Qt::DisplayRole); // Сумма
             row.append(amountItem);
 
-            row.append(new QStandardItem(car[4].toString())); // Описание
+            QStandardItem *debtItem = new QStandardItem();
+            debtItem->setData(car[4].toInt(), Qt::DisplayRole); // Долг
+            row.append(debtItem);
+
+            row.append(new QStandardItem(car[5].toString())); // Описание
 
             model->appendRow(row);
         }
@@ -175,7 +177,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Долг", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -183,21 +185,23 @@ void ReportPage::setTable()
             row.append(new QStandardItem(investor[0].toString()));
             row.append(new QStandardItem(investor[1].toString()));
             row.append(new QStandardItem());
-            row[2]->setData(investor[2].toInt(), Qt::DisplayRole);
+            row[2]->setData(investor[2].toInt(), Qt::DisplayRole); // Доход
             row.append(new QStandardItem());
-            row[3]->setData(investor[3].toInt(), Qt::DisplayRole);
+            row[3]->setData(investor[10].toInt(), Qt::DisplayRole); // Долг (новое поле)
             row.append(new QStandardItem());
-            row[4]->setData(investor[4].toInt(), Qt::DisplayRole);
+            row[4]->setData(investor[3].toInt(), Qt::DisplayRole); // Налог 5%
             row.append(new QStandardItem());
-            row[5]->setData(investor[5].toInt(), Qt::DisplayRole);
+            row[5]->setData(investor[4].toInt(), Qt::DisplayRole); // KWH * 10
             row.append(new QStandardItem());
-            row[6]->setData(investor[6].toInt(), Qt::DisplayRole);
+            row[6]->setData(investor[5].toInt(), Qt::DisplayRole); // Расход
             row.append(new QStandardItem());
-            row[7]->setData(investor[7].toInt(), Qt::DisplayRole);
+            row[7]->setData(investor[6].toInt(), Qt::DisplayRole); // Общий
             row.append(new QStandardItem());
-            row[8]->setData(investor[8].toInt(), Qt::DisplayRole);
+            row[8]->setData(investor[7].toInt(), Qt::DisplayRole); // %
             row.append(new QStandardItem());
-            row[9]->setData(investor[9].toInt(), Qt::DisplayRole);
+            row[9]->setData(investor[8].toInt(), Qt::DisplayRole); // Комиссия
+            row.append(new QStandardItem());
+            row[10]->setData(investor[9].toInt(), Qt::DisplayRole); // Инвестору
             model->appendRow(row);
         }
         break;
@@ -408,18 +412,20 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
+                "Долг",
                 "Налог 5%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
                 "%",
                 "Комиссия",
-                "Инвестору",
+                "Инвестору"
             });
 
             QList<QStandardItem *> row;
             row.append(new QStandardItem("Итого"));
             row.append(new QStandardItem(report[0].toString()));
+            row.append(new QStandardItem(report[8].toString()));
             row.append(new QStandardItem(report[1].toString()));
             row.append(new QStandardItem(report[2].toString()));
             row.append(new QStandardItem(report[3].toString()));
@@ -458,18 +464,20 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
+                "Долг",
                 "Налог 5%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
                 "Машин",
                 "Комиссия",
-                "Инвестору",
+                "Инвестору"
             });
 
             QList<QStandardItem *> row;
             row.append(new QStandardItem("Итого"));
             row.append(new QStandardItem(report[1].toString()));
+            row.append(new QStandardItem(report[9].toString()));
             row.append(new QStandardItem(report[2].toString()));
             row.append(new QStandardItem(report[3].toString()));
             row.append(new QStandardItem(report[4].toString()));

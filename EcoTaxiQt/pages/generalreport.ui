@@ -111,162 +111,212 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="spacing">
-      <number>10</number>
-     </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>410</number>
-     </property>
-     <item alignment="Qt::AlignRight">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>от </string>
-       </property>
-      </widget>
-     </item>
-     <item alignment="Qt::AlignRight">
-      <widget class="QPushButton" name="FromDateButton">
-       <property name="minimumSize">
-        <size>
-         <width>220</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">border: 1px solid black;</string>
-       </property>
-       <property name="text">
-        <string>01.01.0001</string>
-       </property>
-      </widget>
-     </item>
-     <item alignment="Qt::AlignRight">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>до </string>
-       </property>
-      </widget>
-     </item>
-     <item alignment="Qt::AlignHCenter">
-      <widget class="QPushButton" name="ToDateButton">
-       <property name="minimumSize">
-        <size>
-         <width>220</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">border: 1px solid black;</string>
-       </property>
-       <property name="text">
-        <string>02.02.0002</string>
-       </property>
-      </widget>
+    <layout class="QVBoxLayout" name="filtersMainLayout">
+     <item>
+      <layout class="QHBoxLayout" name="periodLayout">
+       <item>
+        <spacer name="periodLeftSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>40</size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>от </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="FromDateButton">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border: 1px solid black;</string>
+         </property>
+         <property name="text">
+          <string>01.01.0001</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>до </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="ToDateButton">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border: 1px solid black;</string>
+         </property>
+         <property name="text">
+          <string>02.02.0002</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="periodRightSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>40</size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </item>
      <item>
-      <widget class="QLabel" name="label_car_filter">
-       <property name="minimumSize">
-        <size>
-         <width>80</width>
-         <height>0</height>
-        </size>
+      <layout class="QHBoxLayout" name="filtersLayout">
+       <property name="leftMargin">
+        <number>45</number>
        </property>
-       <property name="text">
-        <string>Машина:</string>
+       <property name="rightMargin">
+        <number>45</number>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="carFilterComboBox">
-       <property name="minimumSize">
-        <size>
-         <width>150</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">border: 1px solid black;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_investor_filter">
-       <property name="text">
-        <string>Инвестор:</string>
-       </property>
-       <property name="styleSheet">
-        <string>color: #007700; font-size: 22px; font-weight: bold;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="investorFilterComboBox">
-       <property name="minimumSize">
-        <size>
-         <width>150</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string>font-size: 22px; font-weight: bold; background: white; border: 2px solid #007700; border-radius: 12px; padding: 8px 16px;</string>
-       </property>
-       <property name="editable">
-        <bool>false</bool>
-       </property>
-       <property name="insertPolicy">
-        <enum>QComboBox::InsertAtBottom</enum>
-       </property>
-       <property name="placeholderText">
-        <string>Инвестор</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_AfterCarFilterComboBox">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>20</size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_driver_filter">
-       <property name="minimumSize">
-        <size>
-         <width>80</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Водитель:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="driverFilterComboBox">
-       <property name="minimumSize">
-        <size>
-         <width>150</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">border: 1px solid black;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_AfterDriverFilterComboBox">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </spacer>
+       <item>
+        <widget class="QLabel" name="label_car_filter">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Машина:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="carFilterComboBox">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border: 1px solid black;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_investor_filter">
+         <property name="text">
+          <string>Инвестор:</string>
+         </property>
+         <property name="styleSheet">
+          <string>color: #007700; font-size: 22px; font-weight: bold;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="investorFilterComboBox">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string>font-size: 22px; font-weight: bold; background: white; border: 2px solid #007700; border-radius: 12px; padding: 8px 16px;</string>
+         </property>
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <property name="insertPolicy">
+          <enum>QComboBox::InsertAtBottom</enum>
+         </property>
+         <property name="placeholderText">
+          <string>Инвестор</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_driver_filter">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Водитель:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="driverFilterComboBox">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border: 1px solid black;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_debt_filter">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Долг:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="debtFilterComboBox">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border: 1px solid black;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="resetFiltersButton">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Отменить</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background: #007700; color: white; font-weight: bold; border-radius: 8px; padding: 6px 16px;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
