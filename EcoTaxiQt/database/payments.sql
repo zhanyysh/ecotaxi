@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS payments (
     investor_id INTEGER NOT NULL,
     date DATE NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
+    description TEXT,
     FOREIGN KEY (investor_id) REFERENCES investors(id)
 ); 
