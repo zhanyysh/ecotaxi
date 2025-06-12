@@ -5,6 +5,11 @@
 {% block content %}
 
 <h3 class="mt-5">Отчет по всем вашим машинам</h3>
+{% if not pdf_export %}
+<div class="mb-3">
+    <a href="{{ url_for('dashboard_pdf', start_date=start_date, end_date=end_date) }}" class="btn btn-primary ms-2">Экспорт в PDF</a>
+</div>
+{% endif %}
 <div class="table-responsive">
     <form method="get" class="row g-3 mb-3">
         <div class="col-auto">
