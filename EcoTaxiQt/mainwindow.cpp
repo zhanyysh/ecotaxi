@@ -16,24 +16,25 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     ui->timeEdit->setDisabled(true);
 
     // hide settings and reports button if user is not admin
-    // if (!u.checkIsAdmin())
-    // {
-    //     // ui->SettingsButton->setDisabled(true);
-    //     ui->SettingsButton->removeItem(6);
-    //     ui->SettingsButton->removeItem(5);
-    //     ui->SettingsButton->removeItem(2);
-    //     ui->ReportsButton->removeItem(7);
-    //     ui->ReportsButton->removeItem(5);
-    //     ui->ReportsButton->removeItem(4);
-    //     ui->ReportsButton->removeItem(3);
-    //     ui->ReportsButton->removeItem(1);
-    //     ui->ReportsButton->removeItem(0);
-    // }
-    // else if (u.getId() != -1)
-    // {
-    //     ui->SettingsButton->removeItem(6);
-    //     ui->SettingsButton->removeItem(5);
-    // }
+    if (!u.checkIsAdmin())
+    {
+        // ui->SettingsButton->setDisabled(true);
+        ui->SettingsButton->removeItem(6);
+        ui->SettingsButton->removeItem(5);
+        ui->SettingsButton->removeItem(2);
+        ui->ReportsButton->removeItem(8);
+        ui->ReportsButton->removeItem(7);
+        ui->ReportsButton->removeItem(5);
+        ui->ReportsButton->removeItem(4);
+        ui->ReportsButton->removeItem(3);
+        ui->ReportsButton->removeItem(1);
+        ui->ReportsButton->removeItem(0);
+    }
+    else if (u.getId() != -1)
+    {
+        ui->SettingsButton->removeItem(6);
+        ui->SettingsButton->removeItem(5);
+    }
 
     // date & time
     date = QDate::currentDate();
@@ -75,18 +76,11 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
 
     // Фильтрация пунктов меню 'ОТЧЕТЫ' для обычных пользователей
     if (!u.checkIsAdmin()) {
-        // Оставляем только:
-        // 2: ПО МАШИНАМ
-        // 3: ПО ВОДИТЕЛЯМ
-        // 4: ПО ЛОКАЦИЯМ
-        // 6: ПО ЗАРЯДКАМ
-        // 9: ИСТОРИЯ ВЫПЛАТ
-        // Удаляем с конца, чтобы индексы не смещались
-        ui->ReportsButton->removeItem(8); // ДОЛГИ
-        ui->ReportsButton->removeItem(7); // ПО ТИПУ
-        ui->ReportsButton->removeItem(5); // ПО ПОЛЬЗОВАТЕЛЯМ
-        ui->ReportsButton->removeItem(1); // ОБЩИЙ
-        ui->ReportsButton->removeItem(0); // ПО ИНВЕСТОРАМ
+        ui->ReportsButton->clear();
+        ui->ReportsButton->addItem("ПО МАШИНАМ");    // 0
+        ui->ReportsButton->addItem("ПО ВОДИТЕЛЯМ");  // 1
+        ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ");   // 2
+        ui->ReportsButton->addItem("ДОЛГИ");         // 3
     }
 
     openWidnow();

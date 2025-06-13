@@ -187,7 +187,7 @@ void GeneralReport::setTable()
     switch (this->mode)
     {
     case Report::Cars: {
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Долг", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Долг", "Налог 5%", "Заряд", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
         QMap<QString, int> carDebts;
         for (const QVariant &debt : ReportOperations::getDebtsReport(this->fromDate, this->toDate)) {
             QVariantList d = debt.toList();
@@ -215,7 +215,7 @@ void GeneralReport::setTable()
             row.append(taxItem); // tax
             QStandardItem *kwhItem = new QStandardItem();
             kwhItem->setData(cars[5].toInt(), Qt::DisplayRole);
-            row.append(kwhItem); // kwh * 10
+            row.append(kwhItem); // заряд
             QStandardItem *outcomeItem = new QStandardItem();
             outcomeItem->setData(cars[6].toInt(), Qt::DisplayRole);
             row.append(outcomeItem); // outcome
@@ -272,7 +272,7 @@ void GeneralReport::setTable()
 
         break;
     case Report::Drivers:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Событий", "Доход", "KWH * 10", "Расход", "Оборот"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Событий", "Доход", "Заряд", "Расход", "Оборот"});
         for (const QVariant &driver : ReportOperations::getDriversReport(this->fromDate, this->toDate))
         {
             QVariantList drivers = driver.toList();
@@ -291,7 +291,7 @@ void GeneralReport::setTable()
 
             QStandardItem *kwhItem = new QStandardItem();
             kwhItem->setData(drivers[4].toInt(), Qt::DisplayRole);
-            row.append(kwhItem); // kwh * 10
+            row.append(kwhItem); // заряд
 
             QStandardItem *expenseItem = new QStandardItem();
             expenseItem->setData(drivers[5].toInt(), Qt::DisplayRole);
@@ -305,7 +305,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Долг", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Долг", "Налог 5%", "Заряд", "Расход", "Общий", "Комиссия", "Инвестору"});
         {
             QString selectedInvestor = ui->investorFilterComboBox->currentText();
             for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
@@ -326,7 +326,7 @@ void GeneralReport::setTable()
                 row.append(taxItem); // Налог
                 QStandardItem *kwhItem = new QStandardItem();
                 kwhItem->setData(investors[5].toInt(), Qt::DisplayRole);
-                row.append(kwhItem); // kwh * 10
+                row.append(kwhItem); // заряд
                 QStandardItem *expenseItem = new QStandardItem();
                 expenseItem->setData(investors[6].toInt(), Qt::DisplayRole);
                 row.append(expenseItem); // Расход
@@ -359,7 +359,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Locations:
-        model->setHorizontalHeaderLabels({"ID", "Название", "KWH"});
+        model->setHorizontalHeaderLabels({"ID", "Название", "Заряд"});
         for (const QVariant &location : ReportOperations::getLocationsReport(this->fromDate, this->toDate))
         {
             QVariantList locations = location.toList();
@@ -369,16 +369,16 @@ void GeneralReport::setTable()
             row.append(new QStandardItem(locations[0].toString()));  // ID
             row.append(new QStandardItem(locations[1].toString()));  // Название
 
-            // Ensure numerical data (KWH) is set correctly for sorting as float or double
+            // Ensure numerical data (Заряд) is set correctly for sorting as float or double
             QStandardItem *kwhItem = new QStandardItem();
             kwhItem->setData(locations[2].toInt(), Qt::DisplayRole);  // Change to .toDouble() for float or double values
-            row.append(kwhItem); // KWH
+            row.append(kwhItem); // заряд
 
             model->appendRow(row);
         }
         break;
     case Report::Charges:
-        model->setHorizontalHeaderLabels({"id", "ID Машины", "KWH", "Время"});
+        model->setHorizontalHeaderLabels({"id", "ID Машины", "Заряд", "Время"});
         for (const QVariant &charge : ReportOperations::getChargesReport(this->fromDate, this->toDate))
         {
             QVariantList charges = charge.toList();
@@ -390,7 +390,7 @@ void GeneralReport::setTable()
 
             // Ensure numerical data is set correctly for sorting as integers
             QStandardItem *kwhItem = new QStandardItem();
-            kwhItem->setData(charges[2].toInt(), Qt::DisplayRole);  // KWH
+            kwhItem->setData(charges[2].toInt(), Qt::DisplayRole);  // заряд
             row.append(kwhItem);
 
             QStandardItem *timeItem = new QStandardItem();
@@ -714,7 +714,7 @@ void GeneralReport::setBottomTable()
                                               "Доход",
                                               "Долг",
                                               "Налог 5%",
-                                              "KWH * 10",
+                                              "Заряд",
                                               "Расход",
                                               "Общая",
                                               "Комиссия",
@@ -763,7 +763,7 @@ void GeneralReport::setBottomTable()
             model->setHorizontalHeaderLabels({"Итого",
                                               "Событий",
                                               "Доход",
-                                              "KWH * 10",
+                                              "Заряд",
                                               "Расход",
                                               "Оборот",
                                               });
@@ -789,7 +789,7 @@ void GeneralReport::setBottomTable()
                                               "Доход",
                                               "Долг",
                                               "Налог 5%",
-                                              "KWH * 10",
+                                              "Заряд",
                                               "Расход",
                                               "Общая",
                                               "Комиссия",
@@ -800,7 +800,7 @@ void GeneralReport::setBottomTable()
             row << new QStandardItem(investors[0].toString()); // Доход
             row << new QStandardItem(investors[1].toString()); // Долг
             row << new QStandardItem(investors[2].toString()); // Налог
-            row << new QStandardItem(investors[3].toString()); // KWH * 10
+            row << new QStandardItem(investors[3].toString()); // заряд
             row << new QStandardItem(investors[4].toString()); // Расход
             row << new QStandardItem(investors[5].toString()); // Общая
             row << new QStandardItem(investors[6].toString()); // Комиссия
@@ -815,7 +815,7 @@ void GeneralReport::setBottomTable()
             QVariantList locations = location.toList();
             model->setHorizontalHeaderLabels({
                 "Итого",
-                "KWH",
+                "Заряд",
             });
 
             QList<QStandardItem *> row;
@@ -832,7 +832,7 @@ void GeneralReport::setBottomTable()
             QVariantList charges = charge.toList();
             model->setHorizontalHeaderLabels({
                 "Итого",
-                "KWH",
+                "Заряд",
             });
 
             QList<QStandardItem *> row;
