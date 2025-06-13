@@ -192,6 +192,11 @@
           </item>
           <item>
            <property name="text">
+            <string>ПАРАМЕТРЫ</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
             <string>УДАЛИТЬ ВСЕ</string>
            </property>
           </item>

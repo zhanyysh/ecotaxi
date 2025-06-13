@@ -100,6 +100,9 @@ bool navigationManager::openSettings(int id)
     case 5:
         lastFunc = [this]() { this->SettingPage->setSettings(Setting::Users); };
         break;
+    case 6:
+        lastFunc = [this]() { this->SettingPage->setSettings(Setting::Parameters); };
+        break;
     default:
         return false;
     }

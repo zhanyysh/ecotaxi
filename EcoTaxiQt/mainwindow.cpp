@@ -176,7 +176,7 @@ void MainWindow::setFinesIndex()
 void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 {
     if (userSession::getInstance().checkIsAdmin()) {
-        if (index == 6)
+        if (index == 7)
         {
             RemoveDB *rdb = new RemoveDB();
             connect(rdb, &RemoveDB::yesClicked, this, &MainWindow::setComboBoxesData);
