@@ -352,14 +352,16 @@ bool Operations::addCharge(Charge charge)
     int locationId = charge.getLocationId();
     float kwh = charge.getKwh();
     float duration = charge.getDuration();
+    float kwhMultiplier = getKwhCostForDate(charge.getDate().date()); // Получаем множитель для даты зарядки
     QDateTime date = charge.getDate();
-    return db.executeSet("INSERT INTO charges (carId, driverId, locationId, kwh, duration, date, userId) VALUES (" + QString::number(carId) + "," + QString::number(driverId) + "," + QString::number(locationId) + "," + QString::number(kwh) + "," + QString::number(duration) + ",'" + date.toString("yyyy-MM-dd hh:mm:ss") + "'," + QString::number(us.getId()) + ")");
+    return db.executeSet("INSERT INTO charges (carId, driverId, locationId, kwh, duration, kwh_multiplier, date, userId) VALUES (" + QString::number(carId) + "," + QString::number(driverId) + "," + QString::number(locationId) + "," + QString::number(kwh) + "," + QString::number(duration) + "," + QString::number(kwhMultiplier) + ",'" + date.toString("yyyy-MM-dd hh:mm:ss") + "'," + QString::number(us.getId()) + ")");
 }
 
 bool Operations::updateCharge(Charge charge)
 {
     dbManager &db = dbManager::getInstance();
-    return db.executeSet("UPDATE charges SET carId = " + QString::number(charge.getCarId()) + ", driverId = " + QString::number(charge.getDriverId()) + ", locationId = " + QString::number(charge.getLocationId()) + ", kwh = " + QString::number(charge.getKwh()) + ", duration = " + QString::number(charge.getDuration()) + ", date = '" + charge.getDate().toString("yyyy-MM-dd hh:mm:ss") + "' WHERE id = " + QString::number(charge.getId()));
+    float kwhMultiplier = getKwhCostForDate(charge.getDate().date());
+    return db.executeSet("UPDATE charges SET carId = " + QString::number(charge.getCarId()) + ", driverId = " + QString::number(charge.getDriverId()) + ", locationId = " + QString::number(charge.getLocationId()) + ", kwh = " + QString::number(charge.getKwh()) + ", duration = " + QString::number(charge.getDuration()) + ", kwh_multiplier = " + QString::number(kwhMultiplier) + ", date = '" + charge.getDate().toString("yyyy-MM-dd hh:mm:ss") + "' WHERE id = " + QString::number(charge.getId()));
 }
 
 bool Operations::deleteCharge(int id)
@@ -607,4 +609,58 @@ QVariantList Operations::getFine(int id) {
         return QVariantList();
     else
         return data[0].toList();
+}
+
+// Методы для работы с периодами kwh
+QList<KwhPeriod> Operations::selectAllKwhPeriods() {
+    dbManager &db = dbManager::getInstance();
+    QVariantList data = db.executeGet("SELECT * FROM kwh_periods ORDER BY from_date");
+    QList<KwhPeriod> periods;
+    foreach (QVariant row, data) {
+        KwhPeriod period(row.toList());
+        periods.append(period);
+    }
+    return periods;
+}
+
+bool Operations::addKwhPeriod(KwhPeriod period) {
+    dbManager &db = dbManager::getInstance();
+    return db.executeSet("INSERT INTO kwh_periods (from_date, to_date, multiplier, description) VALUES ('" + 
+                        period.getFromDate().toString("yyyy-MM-dd") + "', '" + 
+                        period.getToDate().toString("yyyy-MM-dd") + "', " + 
+                        QString::number(period.getMultiplier()) + ", '" + period.getDescription() + "')");
+}
+
+bool Operations::updateKwhPeriod(KwhPeriod period) {
+    dbManager &db = dbManager::getInstance();
+    return db.executeSet("UPDATE kwh_periods SET from_date = '" + 
+                        period.getFromDate().toString("yyyy-MM-dd") + "', to_date = '" + 
+                        period.getToDate().toString("yyyy-MM-dd") + "', multiplier = " + 
+                        QString::number(period.getMultiplier()) + ", description = '" + period.getDescription() + "' WHERE id = " + 
+                        QString::number(period.getId()));
+}
+
+bool Operations::deleteKwhPeriod(int id) {
+    dbManager &db = dbManager::getInstance();
+    return db.executeSet("DELETE FROM kwh_periods WHERE id = " + QString::number(id));
+}
+
+KwhPeriod Operations::getKwhPeriod(int id) {
+    dbManager &db = dbManager::getInstance();
+    QVariantList data = db.executeGet("SELECT * FROM kwh_periods WHERE id = " + QString::number(id));
+    if (data.isEmpty()) {
+        return KwhPeriod(); // Возвращаем пустой период
+    }
+    return KwhPeriod(data[0].toList());
+}
+
+double Operations::getKwhCostForDate(QDate date) {
+    dbManager &db = dbManager::getInstance();
+    QString query = "SELECT multiplier FROM kwh_periods WHERE '" + 
+                   date.toString("yyyy-MM-dd") + "' BETWEEN from_date AND to_date LIMIT 1";
+    QVariantList data = db.executeGet(query);
+    if (data.isEmpty() || data[0].toList().isEmpty()) {
+        return 10.0; // Значение по умолчанию
+    }
+    return data[0].toList()[0].toDouble();
 }

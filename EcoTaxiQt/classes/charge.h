@@ -16,6 +16,7 @@ private:
     int locationId;
     float kwh;
     float duration;
+    float kwh_multiplier;
     QDateTime date;
 
 public:
@@ -27,6 +28,7 @@ public:
     int getLocationId();
     float getKwh();
     float getDuration();
+    float getKwhMultiplier();
     QDateTime getDate();
 
     void setCarId(int newCarId);
@@ -34,6 +36,7 @@ public:
     void setLocationId(int newLocationId);
     void setKwh(float newKwh);
     void setDuration(float newDuration);
+    void setKwhMultiplier(float newKwhMultiplier);
     void setDate(QDateTime newDate);
 };
 

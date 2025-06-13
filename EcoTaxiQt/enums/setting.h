@@ -8,6 +8,7 @@ enum class Setting {
     Types,
     Locations,
     Users,
+    Parameters,
 };
 
 #endif // SETTING_H

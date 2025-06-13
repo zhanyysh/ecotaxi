@@ -19,6 +19,7 @@
 #include "../classes/type.h"
 #include "../classes/location.h"
 #include "../classes/user.h"
+#include "../classes/kwhperiod.h"
 
 using namespace std;
 
@@ -98,6 +99,13 @@ public:
     bool static updateFine(int id, QDate date, QTime time, int carId, int driverId, QString fid, int amount, bool isPaid, QString description);
     bool static deleteFine(int id);
     QVariantList static getFine(int id);
+
+    QList<KwhPeriod> static selectAllKwhPeriods();
+    bool static addKwhPeriod(KwhPeriod period);
+    bool static updateKwhPeriod(KwhPeriod period);
+    bool static deleteKwhPeriod(int id);
+    KwhPeriod static getKwhPeriod(int id);
+    double static getKwhCostForDate(QDate date);
 };
 
 #endif // OPERATIONS_H

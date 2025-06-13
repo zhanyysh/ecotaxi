@@ -13,6 +13,13 @@ Charge::Charge(QVariantList charge)
     this->kwh = charge[4].toFloat();
     this->duration = charge[5].toFloat();
     this->date = charge[6].toDateTime();
+    
+    // Проверяем, есть ли поле kwh_multiplier в данных
+    if (charge.size() > 7) {
+        this->kwh_multiplier = charge[7].toFloat();
+    } else {
+        this->kwh_multiplier = 10.0; // Значение по умолчанию
+    }
 }
 
 int Charge::getId()
@@ -49,6 +56,11 @@ QDateTime Charge::getDate() {
     return date;
 }
 
+float Charge::getKwhMultiplier()
+{
+    return kwh_multiplier;
+}
+
 void Charge::setCarId(int newCarId)
 {
     carId = newCarId;
@@ -77,3 +89,8 @@ void Charge::setDuration(float newDuration)
 void Charge::setDate(QDateTime newDate) {
     date = newDate;
 };
+
+void Charge::setKwhMultiplier(float newKwhMultiplier)
+{
+    kwh_multiplier = newKwhMultiplier;
+}

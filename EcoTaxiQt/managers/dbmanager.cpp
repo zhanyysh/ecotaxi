@@ -95,6 +95,7 @@ void dbManager::createTables()
     createRepairsTable();
     createFinesTable();
     createPaymentsTable();
+    createSettingsTable();
 }
 
 bool dbManager::isConnected() const
@@ -238,11 +239,24 @@ void dbManager::createChargeTable()
             locationId INTEGER NOT NULL,
             kwh FLOAT NOT NULL,
             duration FLOAT NOT NULL,
+            kwh_multiplier FLOAT NOT NULL DEFAULT 10,
             date DATETIME DEFAULT CURRENT_TIMESTAMP,
             userId INTEGER NOT NULL
         )
     )Q";
     this->executeSet(createTableQuery);
+    
+    // Добавляем колонку kwh_multiplier к существующей таблице, если её нет
+    QString checkColumnQuery = "SHOW COLUMNS FROM charges LIKE 'kwh_multiplier'";
+    QVariantList result = this->executeGet(checkColumnQuery);
+    if (result.isEmpty()) {
+        QString addColumnQuery = "ALTER TABLE charges ADD COLUMN kwh_multiplier FLOAT NOT NULL DEFAULT 10";
+        this->executeSet(addColumnQuery);
+        
+        // Обновляем существующие записи, устанавливая множитель по умолчанию
+        QString updateExistingQuery = "UPDATE charges SET kwh_multiplier = 10 WHERE kwh_multiplier IS NULL";
+        this->executeSet(updateExistingQuery);
+    }
 }
 
 void dbManager::createTypeTable()
@@ -364,4 +378,40 @@ void dbManager::createPaymentsTable()
         )
     )Q";
     this->executeSet(createTableQuery);
+}
+
+void dbManager::createSettingsTable()
+{
+    // Создаем таблицу для периодов kwh
+    QString createKwhPeriodsTable = R"Q(
+        CREATE TABLE IF NOT EXISTS kwh_periods (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            from_date DATE NOT NULL,
+            to_date DATE NOT NULL,
+            multiplier FLOAT NOT NULL,
+            description TEXT
+        )
+    )Q";
+    this->executeSet(createKwhPeriodsTable);
+    // Добавляем колонку description к существующей таблице, если её нет
+    QString checkDescColumn = "SHOW COLUMNS FROM kwh_periods LIKE 'description'";
+    QVariantList descResult = this->executeGet(checkDescColumn);
+    if (descResult.isEmpty()) {
+        QString addDescColumn = "ALTER TABLE kwh_periods ADD COLUMN description TEXT";
+        this->executeSet(addDescColumn);
+    }
+    // Удаляем колонку created_at, если она есть
+    QString checkCreatedAt = "SHOW COLUMNS FROM kwh_periods LIKE 'created_at'";
+    QVariantList createdAtResult = this->executeGet(checkCreatedAt);
+    if (!createdAtResult.isEmpty()) {
+        QString dropCreatedAt = "ALTER TABLE kwh_periods DROP COLUMN created_at";
+        this->executeSet(dropCreatedAt);
+    }
+    // Добавляем период по умолчанию, если таблица пустая
+    QString checkPeriodsQuery = "SELECT COUNT(*) FROM kwh_periods";
+    QVariantList periodsResult = this->executeGet(checkPeriodsQuery);
+    if (!periodsResult.isEmpty() && periodsResult[0].toList()[0].toInt() == 0) {
+        QString insertDefaultPeriod = "INSERT INTO kwh_periods (from_date, to_date, multiplier, description) VALUES ('2020-01-01', '2099-12-31', 10, 'Период по умолчанию')";
+        this->executeSet(insertDefaultPeriod);
+    }
 }

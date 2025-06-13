@@ -1,5 +1,15 @@
 #include "settingspage.h"
 #include "ui_settingspage.h"
+#include <QInputDialog>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QDateEdit>
+#include <QDoubleSpinBox>
+#include <QPushButton>
+#include <QTextEdit>
+#include "calendarpage.h"
 
 SettingsPage::SettingsPage(nm *nav, QWidget *parent)
     : QWidget(parent), ui(new Ui::SettingsPage)
@@ -50,6 +60,10 @@ void SettingsPage::setHeader()
 
     case Setting::Users:
         header = "Пользователи";
+        break;
+
+    case Setting::Parameters:
+        header = "ПАРАМЕТРЫ";
         break;
     }
 
@@ -136,9 +150,22 @@ bool SettingsPage::setTable()
                               new QStandardItem(user.getName()),
                               new QStandardItem(user.getDescription())});
         break;
+    case Setting::Parameters:
+        model->setHorizontalHeaderLabels({"ID", "С", "По", "Множитель", "Описание"});
+        for (KwhPeriod period : Operations::selectAllKwhPeriods()) {
+            QList<QStandardItem*> row;
+            row << new QStandardItem(QString::number(period.getId()))
+                << new QStandardItem(period.getFromDate().toString("dd.MM.yyyy"))
+                << new QStandardItem(period.getToDate().toString("dd.MM.yyyy"))
+                << new QStandardItem(QString::number(period.getMultiplier()))
+                << new QStandardItem(period.getDescription());
+            model->appendRow(row);
+        }
+        ui->tableView->setModel(model);
+        ui->tableView->setColumnHidden(0, true);
+        ui->tableView->resizeColumnsToContents();
+        break;
     }
-
-    ui->tableView->setModel(model);
 
     ui->tableView->setColumnHidden(0, true);
 
@@ -190,6 +217,13 @@ bool SettingsPage::setTable()
         ui->tableView->setColumnWidth(1, 400);
         ui->tableView->setColumnWidth(2, 530);
         break;
+    case Setting::Parameters:
+        ui->tableView->setColumnWidth(0, 80);   // ID
+        ui->tableView->setColumnWidth(1, 120);  // С
+        ui->tableView->setColumnWidth(2, 120);  // По
+        ui->tableView->setColumnWidth(3, 140);  // Множитель
+        ui->tableView->setColumnWidth(4, 150);  // Описание
+        break;
     }
 
     return true;
@@ -202,6 +236,103 @@ void SettingsPage::on_BackButton_clicked()
 
 void SettingsPage::on_AddButton_clicked()
 {
+    if (this->table == Setting::Parameters) {
+        // Создаем диалог для добавления периода kwh
+        QDialog dialog(this);
+        dialog.setWindowTitle("Добавить период kwh");
+        dialog.setModal(true);
+        
+        QVBoxLayout *layout = new QVBoxLayout(&dialog);
+        
+        // Переменные для хранения дат
+        QDate fromDate = QDate::currentDate();
+        QDate toDate = QDate::currentDate().addYears(1);
+        // Поле "С"
+        QHBoxLayout *fromLayout = new QHBoxLayout();
+        QLabel *fromLabel = new QLabel("С:", &dialog);
+        QPushButton *fromDateButton = new QPushButton(fromDate.toString("dd.MM.yyyy"), &dialog);
+        fromDateButton->setStyleSheet("font-size: 22px; font-weight: bold; background: white; color: #008000; border: 2px solid #008000; border-radius: 8px; padding: 6px 10px;");
+        fromLayout->addWidget(fromLabel);
+        fromLayout->addWidget(fromDateButton);
+        layout->addLayout(fromLayout);
+        // Поле "По"
+        QHBoxLayout *toLayout = new QHBoxLayout();
+        QLabel *toLabel = new QLabel("По:", &dialog);
+        QPushButton *toDateButton = new QPushButton(toDate.toString("dd.MM.yyyy"), &dialog);
+        toDateButton->setStyleSheet("font-size: 22px; font-weight: bold; background: white; color: #008000; border: 2px solid #008000; border-radius: 8px; padding: 6px 10px;");
+        toLayout->addWidget(toLabel);
+        toLayout->addWidget(toDateButton);
+        layout->addLayout(toLayout);
+        // Слоты для открытия календаря
+        QObject::connect(fromDateButton, &QPushButton::clicked, [&]() {
+            CalendarPage *c = new CalendarPage(fromDate);
+            QObject::connect(c, &CalendarPage::changeDate, [&](QDate date){
+                fromDate = date;
+                fromDateButton->setText(date.toString("dd.MM.yyyy"));
+            });
+            c->show();
+        });
+        QObject::connect(toDateButton, &QPushButton::clicked, [&]() {
+            CalendarPage *c = new CalendarPage(toDate);
+            QObject::connect(c, &CalendarPage::changeDate, [&](QDate date){
+                toDate = date;
+                toDateButton->setText(date.toString("dd.MM.yyyy"));
+            });
+            c->show();
+        });
+        
+        // Поле "Множитель"
+        QHBoxLayout *multiplierLayout = new QHBoxLayout();
+        QLabel *multiplierLabel = new QLabel("Множитель:", &dialog);
+        QDoubleSpinBox *multiplierSpinBox = new QDoubleSpinBox(&dialog);
+        multiplierSpinBox->setRange(0.1, 1000.0);
+        multiplierSpinBox->setValue(10.0);
+        multiplierSpinBox->setDecimals(2);
+        multiplierLayout->addWidget(multiplierLabel);
+        multiplierLayout->addWidget(multiplierSpinBox);
+        layout->addLayout(multiplierLayout);
+        
+        // Поле "Описание"
+        QHBoxLayout *descLayout = new QHBoxLayout();
+        QLabel *descLabel = new QLabel("Описание:", &dialog);
+        QTextEdit *descEdit = new QTextEdit(&dialog);
+        descEdit->setMinimumHeight(40);
+        descLayout->addWidget(descLabel);
+        descLayout->addWidget(descEdit);
+        layout->addLayout(descLayout);
+        
+        // Кнопки
+        QHBoxLayout *buttonLayout = new QHBoxLayout();
+        QPushButton *okButton = new QPushButton("OK", &dialog);
+        QPushButton *cancelButton = new QPushButton("Отмена", &dialog);
+        buttonLayout->addWidget(okButton);
+        buttonLayout->addWidget(cancelButton);
+        layout->addLayout(buttonLayout);
+        
+        connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+        connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
+        
+        dialog.setStyleSheet("QDialog { background: #008000; border-radius: 16px; } QLabel { color: white; font-size: 22px; font-weight: bold; } QDateEdit, QDoubleSpinBox, QTextEdit { background: white; color: #008000; font-size: 22px; font-weight: bold; border: 2px solid #008000; border-radius: 8px; padding: 4px 8px; } QPushButton { background-color: #008000; color: white; font-size: 28px; font-weight: bold; border-radius: 10px; padding: 10px 30px; } QPushButton:hover { background-color: #005500; }");
+        fromLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        toLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        multiplierLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        descLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        okButton->setMinimumHeight(52);
+        cancelButton->setMinimumHeight(52);
+        
+        if (dialog.exec() == QDialog::Accepted) {
+            KwhPeriod period;
+            period.setFromDate(fromDate);
+            period.setToDate(toDate);
+            period.setMultiplier(multiplierSpinBox->value());
+            period.setDescription(descEdit->toPlainText());
+            
+            if (Operations::addKwhPeriod(period)) {
+                setTable();
+            }
+        }
+        return;
+    }
     addUpdateWindow *w = new addUpdateWindow(this->table, -1);
     w->resize(w->minimumSizeHint());
     w->show();
@@ -215,6 +346,116 @@ void SettingsPage::on_AddButton_clicked()
 
 void SettingsPage::on_EditButton_clicked()
 {
+    if (this->table == Setting::Parameters) {
+        QItemSelectionModel *select = ui->tableView->selectionModel();
+        if (!select->hasSelection()) {
+            return;
+        }
+        
+        int row = select->selectedRows().at(0).row();
+        int id = ui->tableView->model()->index(row, 0).data().toInt();
+        
+        KwhPeriod period = Operations::getKwhPeriod(id);
+        if (period.getId() == 0) {
+            return;
+        }
+        
+        // Создаем диалог для редактирования периода kwh
+        QDialog dialog(this);
+        dialog.setWindowTitle("Редактировать период kwh");
+        dialog.setModal(true);
+        
+        QVBoxLayout *layout = new QVBoxLayout(&dialog);
+        
+        // Переменные для хранения дат
+        QDate fromDate = period.getFromDate();
+        QDate toDate = period.getToDate();
+        // Поле "С"
+        QHBoxLayout *fromLayout = new QHBoxLayout();
+        QLabel *fromLabel = new QLabel("С:", &dialog);
+        QPushButton *fromDateButton = new QPushButton(fromDate.toString("dd.MM.yyyy"), &dialog);
+        fromDateButton->setStyleSheet("font-size: 22px; font-weight: bold; background: white; color: #008000; border: 2px solid #008000; border-radius: 8px; padding: 6px 10px;");
+        fromLayout->addWidget(fromLabel);
+        fromLayout->addWidget(fromDateButton);
+        layout->addLayout(fromLayout);
+        // Поле "По"
+        QHBoxLayout *toLayout = new QHBoxLayout();
+        QLabel *toLabel = new QLabel("По:", &dialog);
+        QPushButton *toDateButton = new QPushButton(toDate.toString("dd.MM.yyyy"), &dialog);
+        toDateButton->setStyleSheet("font-size: 22px; font-weight: bold; background: white; color: #008000; border: 2px solid #008000; border-radius: 8px; padding: 6px 10px;");
+        toLayout->addWidget(toLabel);
+        toLayout->addWidget(toDateButton);
+        layout->addLayout(toLayout);
+        // Слоты для открытия календаря
+        QObject::connect(fromDateButton, &QPushButton::clicked, [&]() {
+            CalendarPage *c = new CalendarPage(fromDate);
+            QObject::connect(c, &CalendarPage::changeDate, [&](QDate date){
+                fromDate = date;
+                fromDateButton->setText(date.toString("dd.MM.yyyy"));
+            });
+            c->show();
+        });
+        QObject::connect(toDateButton, &QPushButton::clicked, [&]() {
+            CalendarPage *c = new CalendarPage(toDate);
+            QObject::connect(c, &CalendarPage::changeDate, [&](QDate date){
+                toDate = date;
+                toDateButton->setText(date.toString("dd.MM.yyyy"));
+            });
+            c->show();
+        });
+        
+        // Поле "Множитель"
+        QHBoxLayout *multiplierLayout = new QHBoxLayout();
+        QLabel *multiplierLabel = new QLabel("Множитель:", &dialog);
+        QDoubleSpinBox *multiplierSpinBox = new QDoubleSpinBox(&dialog);
+        multiplierSpinBox->setRange(0.1, 1000.0);
+        multiplierSpinBox->setValue(period.getMultiplier());
+        multiplierSpinBox->setDecimals(2);
+        multiplierLayout->addWidget(multiplierLabel);
+        multiplierLayout->addWidget(multiplierSpinBox);
+        layout->addLayout(multiplierLayout);
+        
+        // Поле "Описание"
+        QHBoxLayout *descLayout = new QHBoxLayout();
+        QLabel *descLabel = new QLabel("Описание:", &dialog);
+        QTextEdit *descEdit = new QTextEdit(&dialog);
+        descEdit->setMinimumHeight(40);
+        descEdit->setText(period.getDescription());
+        descLayout->addWidget(descLabel);
+        descLayout->addWidget(descEdit);
+        layout->addLayout(descLayout);
+        
+        // Кнопки
+        QHBoxLayout *buttonLayout = new QHBoxLayout();
+        QPushButton *okButton = new QPushButton("OK", &dialog);
+        QPushButton *cancelButton = new QPushButton("Отмена", &dialog);
+        buttonLayout->addWidget(okButton);
+        buttonLayout->addWidget(cancelButton);
+        layout->addLayout(buttonLayout);
+        
+        connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+        connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
+        
+        dialog.setStyleSheet("QDialog { background: #008000; border-radius: 16px; } QLabel { color: white; font-size: 22px; font-weight: bold; } QDateEdit, QDoubleSpinBox, QTextEdit { background: white; color: #008000; font-size: 22px; font-weight: bold; border: 2px solid #008000; border-radius: 8px; padding: 4px 8px; } QPushButton { background-color: #008000; color: white; font-size: 28px; font-weight: bold; border-radius: 10px; padding: 10px 30px; } QPushButton:hover { background-color: #005500; }");
+        fromLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        toLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        multiplierLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        descLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+        okButton->setMinimumHeight(52);
+        cancelButton->setMinimumHeight(52);
+        
+        if (dialog.exec() == QDialog::Accepted) {
+            period.setFromDate(fromDate);
+            period.setToDate(toDate);
+            period.setMultiplier(multiplierSpinBox->value());
+            period.setDescription(descEdit->toPlainText());
+            
+            if (Operations::updateKwhPeriod(period)) {
+                setTable();
+            }
+        }
+        return;
+    }
     QItemSelectionModel *select = ui->tableView->selectionModel();
     if (select->hasSelection())
     {
@@ -281,6 +522,15 @@ void SettingsPage::on_DeleteButton_clicked()
             d = new CustomDialog("Вы уверены что хотите удалить пользователя " + user.getName() + "?");
             break;
         }
+        case Setting::Parameters:
+        {
+            KwhPeriod period = Operations::getKwhPeriod(id);
+            d = new CustomDialog("Вы уверены что хотите удалить период kwh с " + 
+                               period.getFromDate().toString("dd.MM.yyyy") + " по " + 
+                               period.getToDate().toString("dd.MM.yyyy") + " (множитель: " + 
+                               QString::number(period.getMultiplier()) + ")?");
+            break;
+        }
         default:
             // Handle unexpected case
             break;
@@ -324,6 +574,9 @@ void SettingsPage::onYes()
             break;
         case Setting::Users:
             Operations::deleteUser(id);
+            break;
+        case Setting::Parameters:
+            Operations::deleteKwhPeriod(id);
             break;
         }
 
