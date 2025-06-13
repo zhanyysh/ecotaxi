@@ -76,6 +76,12 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
             ui->AmountEdit->setText(QString::number(event.getAmount()));
             ui->DescEdit->setText(event.getDescription());
             ui->DolgEdit->setText(QString::number(event.getDolg()));
+
+            // Проверяем долг и устанавливаем состояние кнопки "Оплатить"
+            if (event.getDolg() == 0) {
+                ui->paidButton->setDisabled(true);
+                ui->paidButton->setText("Оплачено");
+            }
         }
         break;
     case Events::Charges:
@@ -221,23 +227,41 @@ void addupdatewindowEvents::resetInputColor() {
 }
 
 void addupdatewindowEvents::on_paidButton_clicked() {
-    // Create new event with payment description
-    QString paymentDesc = QString("долг оплачен %1").arg(ui->DateTimeEdit->dateTime().toString("dd.MM.yyyy"));
-    float currentDolg = ui->DolgEdit->text().toFloat();
-    
+    // 1. Получаем данные исходного события
+    Event originalEvent = Operations::getEvent(this->id); // Получаем событие по ID окна
+
+    float currentDolg = originalEvent.getDolg(); // Получаем значение долга из исходного события
+
+    // 2. Обновляем исходное событие в базе данных
+    originalEvent.setDolg(0);
+    originalEvent.setAmount(0);
+    // Описание для исходного события: "оплачено: [сегодняшняя дата]"
+    originalEvent.setDescription(QString("оплачено: %1").arg(QDateTime::currentDateTime().toString("dd.MM.yyyy")));
+    Operations::updateEvent(originalEvent);
+
+    // 3. Создаем новое событие для оплаты на текущую дату
+    // Описание для нового события оплаты, используем дату исходного события
+    QString paymentDescForNewEvent = QString("долг оплачен: %1").arg(originalEvent.getDate().toString("dd.MM.yyyy"));
+
     Operations::addEvent(Event(QVariantList::fromList({
-        0,
-        carsId.value(ui->CarIdBox->currentText()),
-        driversId.value(ui->DriverIdBox->currentText()),
-        types.value(ui->TypeBox->currentText()),
-        0, // Set debt to 0 since it's a payment
-        currentDolg, // Set amount equal to the debt being paid
-        paymentDesc,
-        QDateTime::currentDateTime() // Используем текущую дату и время
+        0, // ID для нового события (0 означает новое событие)
+        originalEvent.getCarId(),
+        originalEvent.getDriverId(),
+        originalEvent.getTypeId(),
+        0, // Долг для события оплаты равен 0
+        currentDolg, // Сумма для события оплаты равна исходному долгу
+        paymentDescForNewEvent,
+        QDateTime::currentDateTime() // Дата события оплаты - текущая дата
     })));
 
-    // Clear debt in current event
+    // 4. Обновляем UI текущего окна (необязательно, так как окно закроется)
     ui->DolgEdit->setText("0");
+    ui->AmountEdit->setText("0"); // Также очищаем сумму
+    ui->paidButton->setDisabled(true); // Отключаем кнопку после действия
+
+    // 5. Закрываем окно
+    emit closed();
+    this->close();
 }
 
 
