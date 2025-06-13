@@ -267,6 +267,7 @@ void eventPage::onYes()
             break;
         }
         setTable();
+        setBottomTable();
     }
 }
 
@@ -293,6 +294,7 @@ void eventPage::on_EditButton_clicked()
         loop.exec();
 
         setTable();
+        setBottomTable();
     }
 }
 
