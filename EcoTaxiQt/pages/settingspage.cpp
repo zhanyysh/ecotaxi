@@ -78,77 +78,81 @@ bool SettingsPage::setTable()
     {
     case Setting::Drivers:
         model->setHorizontalHeaderLabels({"ID", "Имя", "Описание"});
-        for (Driver driver : Operations::selectAllDrivers())
-            model->appendRow({new QStandardItem(QString::number(driver.getId())),
-                              new QStandardItem(driver.getName()),
-                              new QStandardItem(driver.getDescription())});
+        for (Driver driver : Operations::selectAllDrivers()) {
+            QList<QStandardItem*> row;
+            row << new QStandardItem(QString::number(driver.getId()))
+                << new QStandardItem(driver.getName())
+                << new QStandardItem(driver.getDescription());
+            model->appendRow(row);
+        }
+        ui->tableView->setModel(model);
+        ui->tableView->setColumnHidden(0, true);
+        ui->tableView->resizeColumnsToContents();
         break;
     case Setting::Cars:
-        if (true) {
-            userSession &us = userSession::getInstance();
-            if (us.checkIsAdmin()) {
-                model->setHorizontalHeaderLabels({"uid", "ID", "Марка", "Модель", "Госномер", "Год", "Инвестор", "Пробег", "Процент" , "Описание"});
-                for (const QVariant &car : Operations::selectAllCarsQuick())
-                {
-                    QVariantList values = car.toList();
-                    model->appendRow({new QStandardItem(values[0].toString()),
-                                      new QStandardItem(values[1].toString()),
-                                      new QStandardItem(values[2].toString()),
-                                      new QStandardItem(values[3].toString()),
-                                      new QStandardItem(values[4].toString()),
-                                      new QStandardItem(values[5].toString()),
-                                      new QStandardItem(values[6].toString()),
-                                      new QStandardItem(values[7].toString()),
-                                      new QStandardItem(values[8].toString() + "%"),
-                                      new QStandardItem(values[9].toString())});
-                }
-            }
-            else
-            {
-                model->setHorizontalHeaderLabels({"uid", "ID", "Марка", "Модель", "Госномер", "Год", "Инвестор", "Пробег", "Описание"});
-                for (const QVariant &car : Operations::selectAllCarsQuick())
-                {
-                    QVariantList values = car.toList();
-                    model->appendRow({new QStandardItem(values[0].toString()),
-                                      new QStandardItem(values[1].toString()),
-                                      new QStandardItem(values[2].toString()),
-                                      new QStandardItem(values[3].toString()),
-                                      new QStandardItem(values[4].toString()),
-                                      new QStandardItem(values[5].toString()),
-                                      new QStandardItem(values[6].toString()),
-                                      new QStandardItem(values[7].toString()),
-                                      new QStandardItem(values[9].toString())});
-                }
-            }
+        model->setHorizontalHeaderLabels({"ID", "Модель", "Описание"});
+        for (Car car : Operations::selectAllCars()) {
+            QList<QStandardItem*> row;
+            row << new QStandardItem(QString::number(car.getId()))
+                << new QStandardItem(car.getModel())
+                << new QStandardItem(car.getDescription());
+            model->appendRow(row);
         }
+        ui->tableView->setModel(model);
+        ui->tableView->setColumnHidden(0, true);
+        ui->tableView->resizeColumnsToContents();
         break;
     case Setting::Investors:
         model->setHorizontalHeaderLabels({"ID", "Имя", "Описание"});
-        for (Investor investor : Operations::selectAllInvestors())
-            model->appendRow({new QStandardItem(QString::number(investor.getId())),
-                              new QStandardItem(investor.getName()),
-                              new QStandardItem(investor.getDescription())});
+        for (Investor investor : Operations::selectAllInvestors()) {
+            QList<QStandardItem*> row;
+            row << new QStandardItem(QString::number(investor.getId()))
+                << new QStandardItem(investor.getName())
+                << new QStandardItem(investor.getDescription());
+            model->appendRow(row);
+        }
+        ui->tableView->setModel(model);
+        ui->tableView->setColumnHidden(0, true);
+        ui->tableView->resizeColumnsToContents();
         break;
     case Setting::Types:
         model->setHorizontalHeaderLabels({"ID", "Название", "Описание"});
-        for (Type type : Operations::selectAllTypes())
-            model->appendRow({new QStandardItem(QString::number(type.getId())),
-                              new QStandardItem(type.getName()),
-                              new QStandardItem(type.getDescription())});
+        for (Type type : Operations::selectAllTypes()) {
+            QList<QStandardItem*> row;
+            row << new QStandardItem(QString::number(type.getId()))
+                << new QStandardItem(type.getName())
+                << new QStandardItem(type.getDescription());
+            model->appendRow(row);
+        }
+        ui->tableView->setModel(model);
+        ui->tableView->setColumnHidden(0, true);
+        ui->tableView->resizeColumnsToContents();
         break;
     case Setting::Locations:
         model->setHorizontalHeaderLabels({"ID", "Название", "Описание"});
-        for (Location location : Operations::selectAllLocations())
-            model->appendRow({new QStandardItem(QString::number(location.getId())),
-                              new QStandardItem(location.getName()),
-                              new QStandardItem(location.getDescription())});
+        for (Location location : Operations::selectAllLocations()) {
+            QList<QStandardItem*> row;
+            row << new QStandardItem(QString::number(location.getId()))
+                << new QStandardItem(location.getName())
+                << new QStandardItem(location.getDescription());
+            model->appendRow(row);
+        }
+        ui->tableView->setModel(model);
+        ui->tableView->setColumnHidden(0, true);
+        ui->tableView->resizeColumnsToContents();
         break;
     case Setting::Users:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Описание"});
-        for (User user : Operations::selectAllUsers())
-            model->appendRow({new QStandardItem(QString::number(user.getId())),
-                              new QStandardItem(user.getName()),
-                              new QStandardItem(user.getDescription())});
+        model->setHorizontalHeaderLabels({"ID", "Логин", "Описание"});
+        for (User user : Operations::selectAllUsers()) {
+            QList<QStandardItem*> row;
+            row << new QStandardItem(QString::number(user.getId()))
+                << new QStandardItem(user.getName())
+                << new QStandardItem(user.getDescription());
+            model->appendRow(row);
+        }
+        ui->tableView->setModel(model);
+        ui->tableView->setColumnHidden(0, true);
+        ui->tableView->resizeColumnsToContents();
         break;
     case Setting::Parameters:
         model->setHorizontalHeaderLabels({"ID", "С", "По", "Множитель", "Описание"});
