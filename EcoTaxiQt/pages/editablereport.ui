@@ -411,7 +411,7 @@
      <item>
       <widget class="QCheckBox" name="checkBox">
        <property name="text">
-        <string>ТОЛЬКО НЕРАБОТАЮЩИЕ</string>
+        <string>ТОЛЬКО НЕОПЛАЧЕННЫЕ</string>
        </property>
       </widget>
      </item>
