@@ -60,13 +60,14 @@ AddUpdateRepair::AddUpdateRepair(eSetting mode, int id, QWidget *parent)
             this->from = repair[2].toDate();
             ui->fromButton->setText(this->from.toString("dd.MM.yyyy"));
             this->to = repair[3].toDate();
-            ui->toButton->setText(this->to.isValid() ? this->to.toString("dd.MM.yyyy") : "-");
+            ui->toButton->setText(this->to.isValid() ? this->to.toString("dd.MM.yyyy") : "");
             ui->DescEdit->setText(repair[4].toString());
         }
         else
         {
             this->from = QDate::currentDate();
             ui->fromButton->setText(this->from.toString("dd.MM.yyyy"));
+            ui->toButton->setText("");
         }
         break;
     case eSetting::Fines:
@@ -253,5 +254,5 @@ void AddUpdateRepair::setFromDate(QDate date)
 void AddUpdateRepair::setToDate(QDate date)
 {
     this->to = date;
-    ui->toButton->setText(date.toString("dd.MM.yyyy"));
+    ui->toButton->setText(date.isValid() ? date.toString("dd.MM.yyyy") : "");
 }

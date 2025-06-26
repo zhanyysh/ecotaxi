@@ -317,6 +317,7 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
         "charge_stats AS (\n"
         "    SELECT\n"
         "        cars.id AS carId,\n"
+        "        SUM(COALESCE(charges.kwh, 0)) AS totalKwhSimple,\n"
         "        SUM(COALESCE(charges.kwh * charges.kwh_multiplier, 0)) AS totalKwh\n"
         "    FROM charges\n"
         "    LEFT JOIN cars ON cars.id = charges.carId\n"
@@ -331,6 +332,7 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
         "    COALESCE(SUM(event_stats.income), 0) AS income,\n"
         "    COALESCE(SUM(event_stats.totalDebt), 0) AS totalDebt,\n" // добавили долг
         "    FLOOR(COALESCE(SUM(event_stats.incomeTax), 0)) AS incomeTax,\n"
+        "    COALESCE(SUM(charge_stats.totalKwhSimple), 0) AS totalKwh,\n"
         "    COALESCE(SUM(charge_stats.totalKwh), 0) AS totalKwh,\n"
         "    COALESCE(SUM(event_stats.outcome), 0) AS outcome,\n"
         "    FLOOR(SUM(\n"
