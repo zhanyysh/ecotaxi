@@ -83,6 +83,7 @@ void EditableReport::openReport(eSetting mode)
         if (QLabel *label = this->findChild<QLabel*>("label_2")) { label->show(); label->setText("Инвестор:"); }
         if (QLabel *label = this->findChild<QLabel*>("label_3")) label->hide();
         if (QLabel *label = this->findChild<QLabel*>("label_days")) label->show();
+        ui->checkBox->setText("ТОЛЬКО НЕРАБОТАЮЩИЕ");
 
         // Populate and set car/investor combos for repairs
         populateComboBoxes(); // Repopulate to ensure latest data
@@ -103,6 +104,7 @@ void EditableReport::openReport(eSetting mode)
         if (QLabel *label = this->findChild<QLabel*>("label_2")) { label->show(); label->setText("Водитель:"); }
         if (QLabel *label = this->findChild<QLabel*>("label_3")) label->hide();
         if (QLabel *label = this->findChild<QLabel*>("label_days")) label->hide();
+        ui->checkBox->setText("ТОЛЬКО НЕОПЛАЧЕННЫЕ");
 
         // Populate and set car/driver combos for fines
         populateComboBoxes(); // Repopulate to ensure latest data
@@ -198,7 +200,9 @@ void EditableReport::setTable()
             item->setData(days, Qt::DisplayRole);
             row << item;
             row << new QStandardItem(rp[5].toString());
-            row << new QStandardItem(rp[6].toString());
+            QString toDateStrCell = rp[6].toString();
+            QDate toDateCell = QDate::fromString(toDateStrCell, "yyyy-MM-dd");
+            row << new QStandardItem((toDateCell.isValid() && toDateStrCell != "") ? toDateStrCell : "");
             row << new QStandardItem(desc);
             model->appendRow(row);
         }

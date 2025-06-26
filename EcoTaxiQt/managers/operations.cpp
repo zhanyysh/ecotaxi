@@ -352,7 +352,7 @@ bool Operations::addCharge(Charge charge)
     int locationId = charge.getLocationId();
     float kwh = charge.getKwh();
     float duration = charge.getDuration();
-    float kwhMultiplier = getKwhCostForDate(charge.getDate().date()); // Получаем множитель для даты зарядки
+    float kwhMultiplier = getKwhCostForDate(charge.getDate().date());
     QDateTime date = charge.getDate();
     return db.executeSet("INSERT INTO charges (carId, driverId, locationId, kwh, duration, kwh_multiplier, date, userId) VALUES (" + QString::number(carId) + "," + QString::number(driverId) + "," + QString::number(locationId) + "," + QString::number(kwh) + "," + QString::number(duration) + "," + QString::number(kwhMultiplier) + ",'" + date.toString("yyyy-MM-dd hh:mm:ss") + "'," + QString::number(us.getId()) + ")");
 }
@@ -660,7 +660,7 @@ double Operations::getKwhCostForDate(QDate date) {
                    date.toString("yyyy-MM-dd") + "' BETWEEN from_date AND to_date LIMIT 1";
     QVariantList data = db.executeGet(query);
     if (data.isEmpty() || data[0].toList().isEmpty()) {
-        return 10.0; // Значение по умолчанию
+        return 10.0;
     }
     return data[0].toList()[0].toDouble();
 }
