@@ -328,17 +328,17 @@ void GeneralReport::setTable()
                 kwhItem->setData(investors[5].toInt(), Qt::DisplayRole);
                 row.append(kwhItem); // заряд
                 QStandardItem *expenseItem = new QStandardItem();
-                expenseItem->setData(investors[6].toInt(), Qt::DisplayRole);
+                expenseItem->setData(investors[7].toInt(), Qt::DisplayRole);
                 row.append(expenseItem); // Расход
                 QStandardItem *profitItem = new QStandardItem();
-                profitItem->setData(investors[7].toInt(), Qt::DisplayRole);
-                row.append(profitItem); // Прибыль
-                QStandardItem *ourMoneyItem = new QStandardItem();
-                ourMoneyItem->setData(investors[8].toInt(), Qt::DisplayRole);
-                row.append(ourMoneyItem); // Наша прибыль
+                profitItem->setData(investors[8].toInt(), Qt::DisplayRole); // Общий
+                row.append(profitItem); // Общий
+                QStandardItem *commissionItem = new QStandardItem();
+                commissionItem->setData(investors[9].toInt(), Qt::DisplayRole); // Комиссия
+                row.append(commissionItem);
                 QStandardItem *investorsMoneyItem = new QStandardItem();
-                investorsMoneyItem->setData(investors[9].toInt(), Qt::DisplayRole);
-                row.append(investorsMoneyItem); // Прибыль инвестора
+                investorsMoneyItem->setData(investors[10].toInt(), Qt::DisplayRole); // Инвестору
+                row.append(investorsMoneyItem);
                 model->appendRow(row);
             }
             
@@ -781,7 +781,19 @@ void GeneralReport::setBottomTable()
         }
         break;
 
-    case Report::Investors:
+    case Report::Investors: {
+        // Получаем все строки основной таблицы
+        QAbstractItemModel *mainModel = ui->tableView->model();
+        int rowCount = mainModel->rowCount();
+        int colCount = mainModel->columnCount();
+        // Индексы колонок: 'Комиссия' = colCount-2, 'Инвестору' = colCount-1
+        int commissionSum = 0;
+        int investorsSum = 0;
+        for (int i = 0; i < rowCount; ++i) {
+            commissionSum += mainModel->index(i, colCount-2).data().toInt();
+            investorsSum += mainModel->index(i, colCount-1).data().toInt();
+        }
+        // Получаем остальные итоговые значения из SQL, как раньше
         for (const QVariant &investor : ReportOperations::getAllInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
@@ -803,11 +815,12 @@ void GeneralReport::setBottomTable()
             row << new QStandardItem(investors[3].toString()); // заряд
             row << new QStandardItem(investors[4].toString()); // Расход
             row << new QStandardItem(investors[5].toString()); // Общая
-            row << new QStandardItem(investors[6].toString()); // Комиссия
-            row << new QStandardItem(investors[7].toString()); // Инвесторам
+            row << new QStandardItem(QString::number(commissionSum)); // Комиссия (сумма по строкам)
+            row << new QStandardItem(QString::number(investorsSum)); // Инвестору (сумма по строкам)
             model->appendRow(row);
         }
         break;
+    }
 
     case Report::Locations:
         for (const QVariant &location : ReportOperations::getAllLocationsReport(this->fromDate, this->toDate))
