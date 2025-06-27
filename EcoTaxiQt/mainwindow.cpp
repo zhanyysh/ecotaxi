@@ -205,10 +205,22 @@ void MainWindow::on_ReportsButton_currentIndexChanged(int index)
             case 0: nav->openReport(2); break; // ПО МАШИНАМ
             case 1: nav->openReport(3); break; // ПО ВОДИТЕЛЯМ
             case 2: nav->openReport(4); break; // ПО ЛОКАЦИЯМ
-            case 3: nav->openReport(6); break; // ДОЛГИ
+            case 3: nav->openReport(16); break; // ДОЛГИ
         }
     } else {
-        nav->openReport(index);
+        // Явный маппинг для админа
+        switch (index) {
+            case 0: nav->openReport(0); break; // ПО ИНВЕСТОРАМ
+            case 1: nav->openReport(1); break; // ОБЩИЙ
+            case 2: nav->openReport(2); break; // ПО МАШИНАМ
+            case 3: nav->openReport(3); break; // ПО ВОДИТЕЛЯМ
+            case 4: nav->openReport(4); break; // ПО ЛОКАЦИЯМ
+            case 5: nav->openReport(5); break; // ПО ПОЛЬЗОВАТЕЛЯМ
+            case 6: nav->openReport(6); break; // ПО ЗАРЯДКАМ
+            case 7: nav->openReport(7); break; // ПО ТИПУ
+            case 8: nav->openReport(16); break; // ДОЛГИ
+            case 9: nav->openPaymentHistory(); break; // ИСТОРИЯ ВЫПЛАТ
+        }
     }
 }
 
