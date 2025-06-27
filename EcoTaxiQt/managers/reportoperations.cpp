@@ -75,7 +75,8 @@ QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS incomeTax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
-        "           SUM(COALESCE(amount, 0)) AS totalAmount\n"
+        "           SUM(COALESCE(amount, 0)) AS totalAmount,\n"
+        "           SUM(COALESCE(dolg, 0)) AS totalDebt\n" // добавлено поле totalDebt
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
@@ -100,17 +101,18 @@ QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
         "        FLOOR((events.income * 0.95) - COALESCE(charges.totalKwhCost, 0) + events.outcome) AS profit,\n"
         "        COALESCE(charges.totalKwhCost, 0) AS kwh,\n"
         "        COALESCE(cars.percentage, 0) AS percentage,\n"
+        "        COALESCE(events.totalDebt, 0) AS totalDebt,\n"
         "        CASE \n"
-        "            WHEN (events.income * 0.95 - COALESCE(events.totalDebt, 0) - COALESCE(charges.totalKwh, 0) - ABS(events.outcome)) >= 0 THEN \n"
-        "                FLOOR(cars.percentage * (events.income * 0.95 - COALESCE(events.totalDebt, 0) - COALESCE(charges.totalKwh, 0) - ABS(events.outcome)) / 100)\n"
+        "            WHEN (events.income * 0.95 - COALESCE(events.totalDebt, 0) - COALESCE(charges.totalKwhCost, 0) - ABS(events.outcome)) >= 0 THEN \n"
+        "                FLOOR(cars.percentage * (events.income * 0.95 - COALESCE(events.totalDebt, 0) - COALESCE(charges.totalKwhCost, 0) - ABS(events.outcome)) / 100)\n"
         "            ELSE \n"
         "                0 \n"
         "        END AS ourIncome,\n"
         "        CASE \n"
-        "            WHEN (events.income * 0.95) - COALESCE(charges.totalKwh, 0) + events.outcome > 0 THEN \n"
-        "                FLOOR((100 - cars.percentage) * ((events.income * 0.95) - COALESCE(charges.totalKwh, 0) + events.outcome) / 100)\n"
+        "            WHEN (events.income * 0.95) - COALESCE(charges.totalKwhCost, 0) + events.outcome > 0 THEN \n"
+        "                FLOOR((100 - cars.percentage) * ((events.income * 0.95) - COALESCE(charges.totalKwhCost, 0) + events.outcome) / 100)\n"
         "            ELSE \n"
-        "                FLOOR((events.income * 0.95) - COALESCE(charges.totalKwh, 0) + events.outcome)\n"
+        "                FLOOR((events.income * 0.95) - COALESCE(charges.totalKwhCost, 0) + events.outcome)\n"
         "        END AS investorsIncome\n"
         "    FROM cars\n"
         "    LEFT JOIN grouped_events AS events ON cars.id = events.carId\n"
@@ -124,13 +126,17 @@ QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
         "    FLOOR(SUM(outcome)) AS totalOutcome,\n"
         "    FLOOR(SUM(profit)) AS totalProfit,\n"
         "    FLOOR(SUM(ourIncome)) AS totalOurIncome,\n"
-        "    FLOOR(SUM(investorsIncome)) AS totalInvestorsIncome\n"
+        "    FLOOR(SUM(investorsIncome)) AS totalInvestorsIncome,\n"
+        "    FLOOR(SUM(totalDebt)) AS totalDebt\n"
         "FROM car_stats";
+
     QVariantList data = db.executeGet(query);
+
     if (!data.isEmpty())
     {
         result.append(data[0]);
     }
+
     return result;
 }
 
@@ -429,7 +435,8 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
         "    FLOOR(SUM(outcome)) AS totalOutcome,\n"
         "    FLOOR(SUM(income) * 0.95 - SUM(totalDebt) - SUM(totalKwh) - ABS(SUM(outcome))) AS totalProfit,\n"
         "    FLOOR(SUM(ourIncome)) AS totalOurIncome,\n"
-        "    FLOOR(SUM(investorsIncome)) AS totalInvestorsIncome\n"
+        "    FLOOR(SUM(investorsIncome)) AS totalInvestorsIncome,\n"
+        "    FLOOR(SUM(totalDebt)) AS totalDebt\n"
         "FROM car_stats";
 
     QVariantList data = db.executeGet(query);
@@ -591,15 +598,13 @@ QVariantList ReportOperations::getUsers2Report(QDate fromDate, QDate toDate)
     {
         QString userName = userNameVar.toList()[0].toString();
         headerRow << userName;
-        dynamicColumns += QString("SUM(CASE WHEN users.name = '%1' THEN 1 ELSE 0 END) AS `%1`, ")
-                              .arg(userName.replace("'", "''"));
+        dynamicColumns += ", SUM(CASE WHEN users.name = '" + userName.replace("'", "''") + "' THEN 1 ELSE 0 END) AS `" + userName + "`";
     }
-    dynamicColumns.chop(2); // Убираем последнюю запятую и пробел
 
     QString mainQuery = QString(
                             "SELECT DATE(events.date) AS eventDate, "
                             "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
-                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS removed "
+                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS удален"
                             "%1 "
                             "FROM events "
                             "LEFT JOIN users ON users.id = events.userId "
@@ -636,15 +641,13 @@ QVariantList ReportOperations::getAllUsers2Report(QDate fromDate, QDate toDate)
     {
         QString userName = userNameVar.toList()[0].toString();
         headerRow << userName;
-        dynamicColumns += QString("SUM(CASE WHEN users.name = '%1' THEN 1 ELSE 0 END) AS `%1`, ")
-                              .arg(userName.replace("'", "''"));
+        dynamicColumns += ", SUM(CASE WHEN users.name = '" + userName.replace("'", "''") + "' THEN 1 ELSE 0 END) AS `" + userName + "`";
     }
-    dynamicColumns.chop(2); // Убираем последнюю запятую и пробел
 
     QString mainQuery = QString(
                             "SELECT "
                             "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
-                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS удален "
+                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS удален"
                             "%1 "
                             "FROM events "
                             "LEFT JOIN users ON users.id = events.userId "
