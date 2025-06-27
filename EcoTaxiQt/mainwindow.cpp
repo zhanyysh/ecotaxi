@@ -198,11 +198,15 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
-    if (index == 9) { // История выплат
-        nav->openPaymentHistory();
-    } else if (index > 7) {
-        index += 7;
-        nav->openReport(index);
+    userSession &u = userSession::getInstance();
+    if (!u.checkIsAdmin()) {
+        // Маппинг для обычного пользователя
+        switch (index) {
+            case 0: nav->openReport(2); break; // ПО МАШИНАМ
+            case 1: nav->openReport(3); break; // ПО ВОДИТЕЛЯМ
+            case 2: nav->openReport(4); break; // ПО ЛОКАЦИЯМ
+            case 3: nav->openReport(6); break; // ДОЛГИ
+        }
     } else {
         nav->openReport(index);
     }
