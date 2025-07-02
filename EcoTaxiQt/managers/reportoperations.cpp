@@ -1470,6 +1470,7 @@ QVariantList ReportOperations::getNotDoneRepairsReport()
         "SELECT "
         "   repairs.id,\n"
         "   cars.sid AS carId,\n"
+        "   cars.licensePlate AS carLicensePlate,\n"
         "   (SELECT investors.name FROM investors WHERE investors.id = cars.investorId) AS carInvestor,\n"
         "   COALESCE(DATEDIFF(IFNULL(repairs.toDate, CURRENT_DATE()), repairs.fromDate), 0) AS daysCount,\n"
         "   IFNULL(repairs.fromDate, '-') AS fromDate,\n"
@@ -1477,7 +1478,7 @@ QVariantList ReportOperations::getNotDoneRepairsReport()
         "   repairs.description\n"
         "FROM repairs\n"
         "LEFT JOIN cars ON cars.id = repairs.carId\n"
-        "WHERE repairs.toDate IS NULL\n"
+        "WHERE (repairs.toDate IS NULL OR repairs.toDate = '')\n"
         "ORDER BY repairs.id DESC";
     QVariantList data = db.executeGet(query);
     return data;
