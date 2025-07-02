@@ -144,7 +144,7 @@ void EditableReport::setTable()
 
         for (const QVariant &repair : report) {
             QVariantList rp = repair.toList();
-            QString carLicensePlate = rp[2].toString();
+            QString carSid = rp[2].toString(); // теперь sid
             QString investor = rp[3].toString();
             int days = rp[4].toInt();
             QDate fromDate = QDate::fromString(rp[5].toString(), "yyyy-MM-dd");
@@ -152,7 +152,7 @@ void EditableReport::setTable()
             QString desc = rp[7].toString();
 
             // Apply filters
-            if (!carFilter.isEmpty() && carLicensePlate != carFilter)
+            if (!carFilter.isEmpty() && carSid != carFilter)
                 continue;
             if (!investorFilter.isEmpty() && investor != investorFilter)
                 continue;
@@ -162,39 +162,33 @@ void EditableReport::setTable()
                 int filterDays = daysFilter.toInt(&ok);
                 if (ok && days != filterDays)
                     continue;
-                // If filter text is not a valid integer, skip filtering by days (or you could add an error indicator)
             }
-            // Keep description filter logic for now based on previous user requests
             if (!descriptionFilter.isEmpty() && !desc.contains(descriptionFilter, Qt::CaseInsensitive))
                 continue;
 
             // Apply date filter: check for overlap between [fromDate, toDate] and [startDate, endDate]
-            // Overlap exists if (start1 <= end2) AND (end1 >= start2)
             if (fromDate.isValid() && toDate.isValid() &&
                 (fromDate > endDate || toDate < startDate))
             {
                  continue; // Skip if there is no overlap
             }
-             // Also skip if either date is invalid and date filter is active (though QDateEdit ensures valid dates normally)
             if ((!fromDate.isValid() || !toDate.isValid()) && (startDate.isValid() || endDate.isValid())) {
-                 // This case should be rare with QDateEdit, but included for robustness.
-                 // If date edits allow invalid states, you might need more complex logic.
             }
 
             // Apply search bar logic: match any column
             if (!searchText.isEmpty() &&
                 !rp[0].toString().contains(searchText, Qt::CaseInsensitive) && // ID
-                !carLicensePlate.contains(searchText, Qt::CaseInsensitive) &&          // Машина
-                !investor.contains(searchText, Qt::CaseInsensitive) &&        // Инвестор
+                !carSid.contains(searchText, Qt::CaseInsensitive) &&           // SID
+                !investor.contains(searchText, Qt::CaseInsensitive) &&         // Инвестор
                 !QString::number(days).contains(searchText, Qt::CaseInsensitive) && // Дней
                 !rp[5].toString().contains(searchText, Qt::CaseInsensitive) && // От
                 !rp[6].toString().contains(searchText, Qt::CaseInsensitive) && // До
-                !desc.contains(searchText, Qt::CaseInsensitive))              // Описание
+                !desc.contains(searchText, Qt::CaseInsensitive))               // Описание
                 continue;
 
             QList<QStandardItem *> row;
             row << new QStandardItem(rp[0].toString());
-            row << new QStandardItem(carLicensePlate);
+            row << new QStandardItem(carSid); // теперь sid
             row << new QStandardItem(investor);
             QStandardItem *item = new QStandardItem();
             item->setData(days, Qt::DisplayRole);
