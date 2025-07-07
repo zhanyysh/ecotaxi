@@ -45,18 +45,18 @@
         <tbody>
             {% for car in cars_report %}
             <tr>
-                <td>{{ car.car_sid }}</td>
+                <td>{{ car.carSid }}</td>
                 <td>{{ car.income }}</td>
-                <td>{{ car.debt }}</td>
-                <td>{{ car.tax }}</td>
+                <td>{{ car.totalDebt }}</td>
+                <td>{{ car.incomeTax }}</td>
                 <td>{{ car.kwh }}</td>
                 <td>{{ car.outcome }}</td>
-                <td>{{ car.total }}</td>
-                <td>{{ car.percent }}</td>
-                <td>{{ car.commission }}</td>
-                <td>{{ car.to_investor }}</td>
+                <td>{{ car.profit }}</td>
+                <td>{{ car.percentage }}</td>
+                <td>{{ car.ourProfit }}</td>
+                <td>{{ car.investorsProfit }}</td>
                 <td>
-                    <a href="{{ url_for('car_details', car_id=car.car_id) }}" class="btn btn-primary btn-sm">Подробнее</a>
+                    <a href="{{ url_for('car_details', car_id=car.carId) }}" class="btn btn-primary btn-sm">Подробнее</a>
                 </td>
             </tr>
             {% else %}
@@ -69,14 +69,14 @@
             <tr class="table-secondary fw-bold">
                 <td>Итого</td>
                 <td>{{ cars_report_total.income }}</td>
-                <td>{{ cars_report_total.debt }}</td>
-                <td>{{ cars_report_total.tax }}</td>
+                <td>{{ cars_report_total.totalDebt }}</td>
+                <td>{{ cars_report_total.incomeTax }}</td>
                 <td>{{ cars_report_total.kwh }}</td>
                 <td>{{ cars_report_total.outcome }}</td>
-                <td>{{ cars_report_total.total }}</td>
+                <td>{{ cars_report_total.profit }}</td>
                 <td>{{ cars_report_total.count }}</td>
-                <td>{{ cars_report_total.commission }}</td>
-                <td>{{ cars_report_total.to_investor }}</td>
+                <td>{{ cars_report_total.ourProfit }}</td>
+                <td>{{ cars_report_total.investorsProfit }}</td>
                 <td></td>
             </tr>
         </tfoot>

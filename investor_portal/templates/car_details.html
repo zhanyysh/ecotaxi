@@ -80,9 +80,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="table-secondary fw-bold">
-                            <td colspan="4">Итого событий: {{ events_total.count }}</td>
-                            <td>{{ events_total.debt }}</td>
-                            <td></td>
+                            <td colspan="6"></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -107,15 +105,15 @@
                     </thead>
                     <tbody>
                         <tr class="table-secondary fw-bold">
-                            <td>{{ events_total.income }}</td>
-                            <td>{{ events_total.debt }}</td>
-                            <td>{{ events_total.tax }}</td>
-                            <td>{{ events_total.kwh }}</td>
-                            <td>{{ events_total.outcome }}</td>
-                            <td>{{ events_total.total }}</td>
-                            <td>{{ events_total.percent }}%</td>
-                            <td>{{ events_total.commission }}</td>
-                            <td>{{ events_total.to_investor }}</td>
+                            <td>{{ car_report.income }}</td>
+                            <td>{{ car_report.totalDebt }}</td>
+                            <td>{{ car_report.incomeTax }}</td>
+                            <td>{{ car_report.kwh }}</td>
+                            <td>{{ car_report.outcome }}</td>
+                            <td>{{ car_report.profit }}</td>
+                            <td>{{ car_report.percentage }}%</td>
+                            <td>{{ car_report.ourProfit }}</td>
+                            <td>{{ car_report.investorsProfit }}</td>
                         </tr>
                     </tbody>
                 </table>
