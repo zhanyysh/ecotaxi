@@ -94,94 +94,104 @@ def login():
 def dashboard():
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor(dictionary=True)
-    # Получаем список машин инвестора (старый вариант)
+    # Получаем список машин инвестора
     cursor.execute('SELECT * FROM cars WHERE investorId = %s', (current_user.id,))
     cars = cursor.fetchall()
 
     # Получаем даты из query string
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    event_date_filter = ''
-    charge_date_filter = ''
-    params = [current_user.id]  # для event_stats
-    charge_params = [current_user.id]  # для charge_stats
+    date_filter = ''
+    params = [current_user.id]
     if start_date and end_date:
-        event_date_filter = ' AND events.date BETWEEN %s AND %s'
-        charge_date_filter = ' AND charges.date BETWEEN %s AND %s'
-        # Для event_stats
+        date_filter = ' AND events.date BETWEEN %s AND %s'
         params.append(start_date)
         end_date_dt = datetime.strptime(end_date, '%Y-%m-%d')
         end_date_dt = end_date_dt.replace(hour=23, minute=59, second=59)
         params.append(end_date_dt.strftime('%Y-%m-%d %H:%M:%S'))
-        # Для charge_stats
-        charge_params.append(start_date)
-        charge_params.append(end_date_dt.strftime('%Y-%m-%d %H:%M:%S'))
+    else:
+        # Если даты не заданы, используем весь диапазон
+        date_filter = ''
 
-    # Новый отчет по всем машинам инвестора с раздельными фильтрами по датам
+    # Новый отчет по всем машинам инвестора (логика как в Qt)
     query = f'''
         WITH event_stats AS (
             SELECT
                 carId,
                 SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income,
-                SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 as tax,
+                SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 as incomeTax,
                 SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome,
-                SUM(COALESCE(dolg, 0)) as debt
+                SUM(COALESCE(dolg, 0)) as totalDebt
             FROM events
-            WHERE carId IN (SELECT id FROM cars WHERE investorId = %s){event_date_filter}
+            WHERE carId IN (SELECT id FROM cars WHERE investorId = %s){date_filter}
             GROUP BY carId
         ),
         charge_stats AS (
             SELECT
                 carId,
-                SUM(COALESCE(kwh, 0)) as kwh
+                SUM(COALESCE(kwh, 0)) as kwh,
+                SUM(COALESCE(kwh * kwh_multiplier, 0)) as kwh_with_multiplier
             FROM charges
-            WHERE carId IN (SELECT id FROM cars WHERE investorId = %s){charge_date_filter}
+            WHERE carId IN (SELECT id FROM cars WHERE investorId = %s){date_filter}
             GROUP BY carId
+        ),
+        car_stats AS (
+            SELECT
+                cars.id as carId,
+                cars.sid as carSid,
+                COALESCE(event_stats.income, 0) as income,
+                FLOOR(COALESCE(event_stats.incomeTax, 0)) as incomeTax,
+                COALESCE(event_stats.outcome, 0) as outcome,
+                COALESCE(charge_stats.kwh, 0) as kwh,
+                COALESCE(charge_stats.kwh_with_multiplier, 0) as kwh_with_multiplier,
+                COALESCE(cars.percentage, 0) as percentage,
+                COALESCE(event_stats.totalDebt, 0) as totalDebt
+            FROM cars
+            LEFT JOIN event_stats ON cars.id = event_stats.carId
+            LEFT JOIN charge_stats ON cars.id = charge_stats.carId
+            WHERE cars.investorId = %s
         )
         SELECT
-            cars.id as car_id,
-            cars.sid as car_sid,
-            COALESCE(event_stats.income, 0) as income,
-            FLOOR(COALESCE(event_stats.tax, 0)) as tax,
-            COALESCE(charge_stats.kwh, 0) as kwh,
-            COALESCE(event_stats.outcome, 0) as outcome,
-            COALESCE(event_stats.debt, 0) as debt,
-            FLOOR(COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) as total,
-            COALESCE(cars.percentage, 0) as percent,
-            FLOOR((COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * (COALESCE(cars.percentage, 0) / 100)) as commission,
-            FLOOR((COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * ((100 - COALESCE(cars.percentage, 0)) / 100)) as to_investor
-        FROM cars
-        LEFT JOIN event_stats ON cars.id = event_stats.carId
-        LEFT JOIN charge_stats ON cars.id = charge_stats.carId
-        WHERE cars.investorId = %s
+            carId,
+            carSid,
+            income,
+            incomeTax,
+            kwh,
+            kwh_with_multiplier,
+            outcome,
+            FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt) as profit,
+            percentage,
+            CASE 
+                WHEN (FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt) < 0) THEN 0
+                ELSE FLOOR((income * 0.95 - kwh_with_multiplier + outcome - totalDebt) * COALESCE(percentage, 0) / 100)
+            END AS ourProfit,
+            CASE 
+                WHEN (FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt) < 0) THEN FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt)
+                ELSE FLOOR((income * 0.95 - kwh_with_multiplier + outcome - totalDebt) * (100 - COALESCE(percentage, 0)) / 100)
+            END AS investorsProfit,
+            totalDebt
+        FROM car_stats;
     '''
-    # Объединяем параметры: сначала event_stats, потом charge_stats, потом основной запрос
-    all_params = params + charge_params + [current_user.id]
+    # Параметры: для event_stats, charge_stats, car_stats
+    all_params = [current_user.id] + [current_user.id] + [current_user.id]
+    if start_date and end_date:
+        all_params = [current_user.id, start_date, end_date_dt.strftime('%Y-%m-%d %H:%M:%S'),
+                      current_user.id, start_date, end_date_dt.strftime('%Y-%m-%d %H:%M:%S'),
+                      current_user.id]
     cursor.execute(query, tuple(all_params))
     cars_report = cursor.fetchall()
 
-    # Для итоговой строки kwh считаем с множителем
-    kwh_with_multiplier = 0
-    kwh_query = f'''
-        SELECT SUM(COALESCE(kwh * kwh_multiplier, 0)) as kwh_with_multiplier
-        FROM charges
-        WHERE carId IN (SELECT id FROM cars WHERE investorId = %s)
-    '''
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(kwh_query, (current_user.id,))
-    kwh_row = cursor.fetchone()
-    if kwh_row and kwh_row['kwh_with_multiplier'] is not None:
-        kwh_with_multiplier = int(kwh_row['kwh_with_multiplier'])
-    cursor.close()
+    # Итоговая строка (суммы по всем машинам)
     cars_report_total = {
         'income': sum(car['income'] or 0 for car in cars_report),
-        'tax': sum(car['tax'] or 0 for car in cars_report),
-        'kwh': kwh_with_multiplier,
+        'incomeTax': sum(car['incomeTax'] or 0 for car in cars_report),
+        'kwh': sum(car['kwh'] or 0 for car in cars_report),
+        'kwh_with_multiplier': sum(car['kwh_with_multiplier'] or 0 for car in cars_report),
         'outcome': sum(car['outcome'] or 0 for car in cars_report),
-        'debt': sum(car['debt'] or 0 for car in cars_report),
-        'total': sum(car['total'] or 0 for car in cars_report),
-        'commission': sum(car['commission'] or 0 for car in cars_report),
-        'to_investor': sum(car['to_investor'] or 0 for car in cars_report),
+        'profit': sum(car['profit'] or 0 for car in cars_report),
+        'ourProfit': sum(car['ourProfit'] or 0 for car in cars_report),
+        'investorsProfit': sum(car['investorsProfit'] or 0 for car in cars_report),
+        'totalDebt': sum(car['totalDebt'] or 0 for car in cars_report),
         'count': len(cars_report)
     }
     cursor.close()
@@ -227,64 +237,104 @@ def car_details(car_id):
     if start_date and end_date:
         date_filter = ' AND events.date BETWEEN %s AND %s'
         params.append(start_date)
-        # включительно до конца дня
         end_date_dt = datetime.strptime(end_date, '%Y-%m-%d')
         end_date_dt = end_date_dt.replace(hour=23, minute=59, second=59)
         params.append(end_date_dt.strftime('%Y-%m-%d %H:%M:%S'))
-    # Получаем события по машине (с фильтром по датам)
+    else:
+        date_filter = ''
+
+    # Новый отчет по одной машине (логика как в Qt)
+    query = f'''
+        WITH event_stats AS (
+            SELECT
+                carId,
+                SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income,
+                SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 as incomeTax,
+                SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome,
+                SUM(COALESCE(dolg, 0)) as totalDebt
+            FROM events
+            WHERE carId = %s{date_filter}
+            GROUP BY carId
+        ),
+        charge_stats AS (
+            SELECT
+                carId,
+                SUM(COALESCE(kwh, 0)) as kwh,
+                SUM(COALESCE(kwh * kwh_multiplier, 0)) as kwh_with_multiplier
+            FROM charges
+            WHERE carId = %s{date_filter}
+            GROUP BY carId
+        ),
+        car_stats AS (
+            SELECT
+                cars.id as carId,
+                cars.sid as carSid,
+                COALESCE(event_stats.income, 0) as income,
+                FLOOR(COALESCE(event_stats.incomeTax, 0)) as incomeTax,
+                COALESCE(event_stats.outcome, 0) as outcome,
+                COALESCE(charge_stats.kwh, 0) as kwh,
+                COALESCE(charge_stats.kwh_with_multiplier, 0) as kwh_with_multiplier,
+                COALESCE(cars.percentage, 0) as percentage,
+                COALESCE(event_stats.totalDebt, 0) as totalDebt
+            FROM cars
+            LEFT JOIN event_stats ON cars.id = event_stats.carId
+            LEFT JOIN charge_stats ON cars.id = charge_stats.carId
+            WHERE cars.id = %s
+        )
+        SELECT
+            carId,
+            carSid,
+            income,
+            incomeTax,
+            kwh,
+            kwh_with_multiplier,
+            outcome,
+            FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt) as profit,
+            percentage,
+            CASE 
+                WHEN (FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt) < 0) THEN 0
+                ELSE FLOOR((income * 0.95 - kwh_with_multiplier + outcome - totalDebt) * COALESCE(percentage, 0) / 100)
+            END AS ourProfit,
+            CASE 
+                WHEN (FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt) < 0) THEN FLOOR(income * 0.95 - kwh_with_multiplier + outcome - totalDebt)
+                ELSE FLOOR((income * 0.95 - kwh_with_multiplier + outcome - totalDebt) * (100 - COALESCE(percentage, 0)) / 100)
+            END AS investorsProfit,
+            totalDebt
+        FROM car_stats;
+    '''
+    # Параметры: для event_stats, charge_stats, car_stats
+    all_params = [car_id] + [car_id] + [car_id]
+    if start_date and end_date:
+        all_params = [car_id, start_date, end_date_dt.strftime('%Y-%m-%d %H:%M:%S'),
+                      car_id, start_date, end_date_dt.strftime('%Y-%m-%d %H:%M:%S'),
+                      car_id]
+    cursor.execute(query, tuple(all_params))
+    car_report = cursor.fetchone() or {}
+
+    # Получаем события по машине (для таблицы событий)
+    events = []
+    event_params = [car_id]
+    event_date_filter = ''
+    if start_date and end_date:
+        event_date_filter = ' AND events.date BETWEEN %s AND %s'
+        event_params.append(start_date)
+        event_params.append(end_date_dt.strftime('%Y-%m-%d %H:%M:%S'))
     cursor.execute(f'''
         SELECT events.date, types.name AS type, drivers.name AS driver, events.amount, events.dolg, events.description
         FROM events
         LEFT JOIN types ON events.typeId = types.id
         LEFT JOIN drivers ON events.driverId = drivers.id
-        WHERE events.carId = %s{date_filter}
+        WHERE events.carId = %s{event_date_filter}
         ORDER BY events.date DESC
-    ''', tuple(params))
+    ''', tuple(event_params))
     events = cursor.fetchall()
-    # Итоговая строка по событиям и зарядкам для этой машины
-    # Считаем суммы по событиям
-    income = sum(event['amount'] or 0 for event in events if event['amount'] and event['amount'] > 0)
-    tax = int(income * 0.05)
-    outcome = sum(event['amount'] or 0 for event in events if event['amount'] and event['amount'] < 0)
-    debt = sum(event['dolg'] or 0 for event in events)
-    total = int(income * 0.95 + outcome)  # Общая прибыль по событиям
-    # Получаем kwh по зарядкам
-    kwh = 0
-    cursor2 = conn.cursor(dictionary=True)
-    charge_date_filter = ''
-    charge_params = [car_id]
-    if start_date and end_date:
-        charge_date_filter = ' AND charges.date BETWEEN %s AND %s'
-        charge_params.append(start_date)
-        charge_params.append(end_date_dt.strftime('%Y-%m-%d %H:%M:%S'))
-    cursor2.execute(f'''SELECT SUM(COALESCE(kwh * kwh_multiplier, 0)) as kwh FROM charges WHERE carId = %s{charge_date_filter}''', tuple(charge_params))
-    kwh_row = cursor2.fetchone()
-    kwh = int(kwh_row['kwh'] or 0)
-    cursor2.close()
-    # Общая с учетом kwh
-    total_with_kwh = total - kwh
-    percent = car['percentage'] or 0
-    commission = int(total_with_kwh * percent / 100) if total_with_kwh > 0 else 0
-    to_investor = int(total_with_kwh * (100 - percent) / 100) if total_with_kwh > 0 else total_with_kwh
-    events_total = {
-        'count': len(events),
-        'income': income,
-        'tax': tax,
-        'kwh': kwh,
-        'outcome': outcome,
-        'debt': debt,
-        'total': total_with_kwh,
-        'percent': percent,
-        'commission': commission,
-        'to_investor': to_investor
-    }
     cursor.close()
     conn.close()
     return render_template(
         'car_details.html',
         car=car,
+        car_report=car_report,
         events=events,
-        events_total=events_total,
         start_date=start_date,
         end_date=end_date
     )
